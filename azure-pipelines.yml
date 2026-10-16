@@ -1,0 +1,136 @@
+# Fenmoor Motor quote demo: build, test, and deploy the React front end with its API.
+#
+# Build runs on every push to main and on every pull request. Deploy runs on main only.
+# What Deploy ships is what Build tested: the built output is published as artifacts and the
+# Static Web Apps task is told not to build anything itself.
+#
+# Written, not run: it was checked as YAML only. docs/DEPLOY.md is how to bring it to life.
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Build
+        steps:
+          - checkout: self
+
+          # ---- .NET ----
+          - task: UseDotNet@2
+            displayName: .NET SDK from global.json
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+
+          - script: dotnet restore motor-quote-demo.slnx
+            displayName: Restore
+
+          - script: dotnet build motor-quote-demo.slnx --configuration $(buildConfiguration) --no-restore
+            displayName: Build (warnings are errors)
+
+          - script: dotnet test --solution motor-quote-demo.slnx --configuration $(buildConfiguration) --no-build
+            displayName: Test (xUnit)
+
+          # `dotnet list package` exits 0 even when it finds something, so read what it printed.
+          - script: |
+              dotnet list motor-quote-demo.slnx package --vulnerable --include-transitive | tee vulnerable.txt
+              if grep -q "has the following vulnerable packages" vulnerable.txt; then
+                echo "##vso[task.logissue type=error]A NuGet package has a known vulnerability."
+                exit 1
+              fi
+            displayName: NuGet vulnerability check, direct and transitive
+
+          # ---- the React app ----
+          - task: NodeTool@0
+            displayName: Node 22
+            inputs:
+              versionSpec: 22.x
+
+          - script: npm ci
+            displayName: npm ci
+            workingDirectory: web/react
+
+          - script: npm run typecheck
+            displayName: Type check
+            workingDirectory: web/react
+
+          - script: npm test
+            displayName: Test (Vitest)
+            workingDirectory: web/react
+
+          - script: npm run contract:check
+            displayName: Contract types match contracts/openapi.yaml
+            workingDirectory: web/react
+
+          - script: npm audit --audit-level=high
+            displayName: npm audit
+            workingDirectory: web/react
+
+          - script: npm run build
+            displayName: Build the page (vite build)
+            workingDirectory: web/react
+
+          # ---- the outputs ----
+          - script: dotnet publish src/Fenmoor.Api/Fenmoor.Api.csproj --configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/api
+            displayName: Publish the API
+
+          - task: PublishPipelineArtifact@1
+            displayName: Artifact, the built page
+            inputs:
+              targetPath: web/react/dist
+              artifact: web-react
+
+          - task: PublishPipelineArtifact@1
+            displayName: Artifact, the published API
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/api
+              artifact: api
+
+  - stage: Deploy
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: DeployReact
+        steps:
+          - checkout: none
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Fetch the built page
+            inputs:
+              artifact: web-react
+              path: $(Pipeline.Workspace)/deploy/web
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Fetch the published API
+            inputs:
+              artifact: api
+              path: $(Pipeline.Workspace)/deploy/api
+
+          # skip_app_build and skip_api_build: nothing is built here, so what ships is what was tested.
+          # With skip_app_build, app_location is the build output, and output_location stays empty.
+          # SWA_TOKEN_REACT is a secret variable of the pipeline (docs/DEPLOY.md, step 4).
+          - task: AzureStaticWebApp@0
+            displayName: Deploy to swa-motor-quote-react
+            inputs:
+              workingDirectory: $(Pipeline.Workspace)/deploy
+              app_location: web
+              api_location: api
+              output_location: ''
+              config_file_location: web
+              skip_app_build: true
+              skip_api_build: true
+              azure_static_web_apps_api_token: $(SWA_TOKEN_REACT)
