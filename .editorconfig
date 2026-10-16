@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yaml,yml,ts,tsx,css,html,md,props,csproj,slnx}]
+indent_size = 2
+
+[contracts/examples/*.json]
+# The golden file is the exact bytes of the API's response body, which has no final newline.
+insert_final_newline = false
+
+[*.cs]
+# Analyzer bar: see Directory.Build.props. Exceptions are listed here, each with its reason.
+
+[tests/**.cs]
+# Test names are sentences with underscores; that is how they read in the test runner.
+dotnet_diagnostic.CA1707.severity = none

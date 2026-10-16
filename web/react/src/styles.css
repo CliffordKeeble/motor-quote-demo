@@ -1,0 +1,631 @@
+/* Fenmoor Motor. Colours from UK road signs: primary-route green, sign yellow,
+   and the white border inset on a direction sign. Type set for legibility. */
+
+:root {
+  --ink: #1b2430;
+  --muted: #55606c;
+  --paper: #ffffff;
+  --wash: #eef1f4;
+  --line: #cdd3da;
+  --route: #00703c;
+  --route-tint: #e6f2ec;
+  --on-route: #ffffff;
+  --sign-yellow: #ffd200;
+  --error: #b3261e;
+  --radius: 6px;
+  --font: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink: #e6eaee;
+    --muted: #a3adb7;
+    --paper: #14181c;
+    --wash: #1c2227;
+    --line: #36404a;
+    --route: #00703c;
+    --route-tint: #13281d;
+    --error: #ff8a80;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 66rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin: 0 0 1.25rem;
+}
+
+h1:focus {
+  outline: none;
+}
+
+h2 {
+  font-size: 1.375rem;
+  line-height: 1.3;
+  margin: 0 0 0.5rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--sign-yellow);
+  outline-offset: 0;
+  box-shadow: 0 0 0 6px var(--ink);
+}
+
+/* Header and footer */
+
+.site-header {
+  background: var(--route);
+  color: var(--on-route);
+  padding: 0.75rem 0;
+}
+
+.site-header .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.5rem;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.disclaimer {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.site-footer {
+  margin-top: 4rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 1.5rem 0 2rem;
+}
+
+.site-footer p {
+  max-width: 44rem;
+  margin: 0;
+}
+
+/* Progress */
+
+.stepper {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  padding: 0;
+  margin: 1.5rem 0 2rem;
+  color: var(--muted);
+}
+
+.stepper li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.stepper .current {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.stepper .current .step-number {
+  background: var(--route);
+  border-color: var(--route);
+  color: var(--sign-yellow);
+}
+
+.stepper .done .step-number {
+  border-color: var(--route);
+  color: var(--route);
+}
+
+/* Layout */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 40rem) minmax(0, 17rem);
+  gap: 3rem;
+  align-items: start;
+}
+
+.layout.wide {
+  grid-template-columns: minmax(0, 52rem);
+}
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+
+.summary {
+  background: var(--wash);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 0.5rem;
+  font-size: 1rem;
+}
+
+.summary dl {
+  margin: 0;
+}
+
+.summary dt {
+  color: var(--muted);
+}
+
+.summary dd {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+/* Fields */
+
+form {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.field > label,
+.field > legend {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  padding: 0;
+}
+
+.hint {
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.error {
+  color: var(--error);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.has-error {
+  border-left: 4px solid var(--error);
+  padding-left: 1rem;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.5rem 0.65rem;
+  width: 100%;
+  max-width: 30rem;
+}
+
+input.short {
+  max-width: 9rem;
+}
+
+input.postcode {
+  text-transform: uppercase;
+}
+
+input[type='date'] {
+  max-width: 13rem;
+}
+
+.prefixed {
+  display: flex;
+  align-items: stretch;
+  max-width: 14rem;
+}
+
+.prefixed span {
+  display: grid;
+  place-items: center;
+  padding: 0 0.75rem;
+  background: var(--wash);
+  border: 2px solid var(--ink);
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+  font-weight: 700;
+}
+
+.prefixed input {
+  border-radius: 0 4px 4px 0;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.5rem;
+}
+
+.choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.6rem;
+  align-items: start;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.8rem;
+  cursor: pointer;
+}
+
+.choice input {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin: 0.2rem 0 0;
+  accent-color: var(--route);
+}
+
+.choice-label {
+  font-weight: 700;
+}
+
+.choice-hint {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.choice.selected {
+  border-color: var(--route);
+  background: var(--route-tint);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--sign-yellow);
+  box-shadow: 0 0 0 6px var(--ink);
+}
+
+.choice input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.check {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0.5rem 0;
+  cursor: pointer;
+}
+
+.check input {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.25rem;
+  flex: none;
+  accent-color: var(--route);
+}
+
+.aside {
+  margin: -1rem 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 36rem;
+}
+
+.error-summary {
+  border: 2px solid var(--error);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: var(--error);
+}
+
+/* Buttons */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+button {
+  font: inherit;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0.65rem 1.4rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+button.primary {
+  background: var(--route);
+  color: var(--on-route);
+  box-shadow: 0 3px 0 #003d21;
+}
+
+button.primary:hover {
+  background: #005a30;
+}
+
+button.primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #003d21;
+}
+
+button.primary:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+button.secondary {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+button.link {
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+  color: var(--route);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  button.link {
+    color: #6fd39b;
+  }
+}
+
+button.example {
+  margin: -0.75rem 0 1.25rem;
+  font-weight: 400;
+}
+
+/* The quote */
+
+.quote {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.price-sign {
+  background: var(--route);
+  color: var(--on-route);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem 1.4rem;
+  box-shadow: inset 0 0 0 5px var(--route), inset 0 0 0 8px #ffffff;
+}
+
+.price-sign h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.price {
+  margin: 0.25rem 0 0.5rem;
+  font-size: clamp(2.75rem, 8vw, 4.25rem);
+  line-height: 1;
+  font-weight: 700;
+  color: var(--sign-yellow);
+}
+
+.price .per {
+  font-size: 1.25rem;
+  color: var(--on-route);
+  font-weight: 400;
+}
+
+.monthly,
+.ref {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.ref {
+  margin-top: 0.75rem;
+  opacity: 0.9;
+}
+
+.intro {
+  margin: 0 0 1rem;
+  max-width: 40rem;
+}
+
+.working {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.working th,
+.working td {
+  text-align: left;
+  padding: 0.6rem 0.75rem 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.working thead th {
+  color: var(--muted);
+  font-weight: 400;
+  border-bottom: 2px solid var(--ink);
+}
+
+.working tbody th {
+  font-weight: 700;
+}
+
+.working .num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  padding-right: 0;
+  white-space: nowrap;
+}
+
+.working td.total {
+  position: relative;
+  width: 9rem;
+  padding-bottom: 0.9rem;
+}
+
+.working .bar {
+  position: absolute;
+  right: 0;
+  bottom: 0.35rem;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--route);
+  opacity: 0.55;
+}
+
+.working .effect.down {
+  color: var(--route);
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .working .effect.down {
+    color: #6fd39b;
+  }
+  .working .bar {
+    background: #6fd39b;
+  }
+}
+
+.working .line-base th,
+.working .line-base td {
+  background: var(--wash);
+}
+
+.working .line-base th {
+  padding-left: 0.6rem;
+}
+
+.working .line-tax th,
+.working .line-tax td {
+  border-bottom: 2px solid var(--ink);
+}
+
+.working tfoot th,
+.working tfoot td {
+  border: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding-top: 0.9rem;
+}
+
+.excess p {
+  margin: 0;
+  max-width: 40rem;
+}
+
+@media (max-width: 600px) {
+  .working thead {
+    display: none;
+  }
+  .working tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    border-bottom: 1px solid var(--line);
+    padding: 0.5rem 0;
+  }
+  .working th,
+  .working td {
+    border: 0;
+    padding: 0.1rem 0;
+  }
+  .working td:nth-child(2) {
+    grid-column: 1;
+    color: var(--muted);
+  }
+  .working td.effect {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .working td.total {
+    grid-column: 1 / -1;
+    width: auto;
+  }
+  .working .line-base th {
+    padding-left: 0;
+  }
+  .working .line-base,
+  .working .line-base th,
+  .working .line-base td {
+    background: none;
+  }
+  .working tfoot tr,
+  .working .line-tax th,
+  .working .line-tax td {
+    border: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .stepper .done .step-number {
+    border-color: #6fd39b;
+    color: #6fd39b;
+  }
+}
+
+/* The waiting state: shown on the quote step while the function wakes up. */
+.waiting {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  max-width: 36rem;
+}
