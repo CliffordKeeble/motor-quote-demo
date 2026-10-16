@@ -96,7 +96,8 @@ public static partial class QuoteValidator
         }
         else if (age is { } ageToday && licenceYears > ageToday - 17)
         {
-            errors["licenceYears"] = $"At {ageToday} you can have held a licence for {Math.Max(ageToday - 17, 0)} years at most";
+            var most = Math.Max(ageToday - 17, 0);
+            errors["licenceYears"] = $"At {ageToday} you can have held a licence for {most} {(most == 1 ? "year" : "years")} at most";
         }
 
         if (request.Postcode is null || !Postcode().IsMatch(request.Postcode.Trim()))

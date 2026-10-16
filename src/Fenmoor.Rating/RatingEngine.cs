@@ -66,7 +66,7 @@ public static class RatingEngine
         var sheet = new Worksheet(StartingPrice(request.Cover), CoverName(request.Cover));
 
         sheet.Factor("Your age", $"{age} on the start date", AgeFactor(age));
-        sheet.Factor("Driving experience", $"{request.LicenceYears} years with a full licence", ExperienceFactor(request.LicenceYears));
+        sheet.Factor("Driving experience", $"{Years(request.LicenceYears)} with a full licence", ExperienceFactor(request.LicenceYears));
         sheet.Factor("Your car", $"Insurance group {vehicle.Group}", GroupFactor(vehicle.Group));
         if (request.Cover != CoverLevel.ThirdPartyOnly)
         {
@@ -81,7 +81,7 @@ public static class RatingEngine
 
         var discount = NoClaimsDiscountFor(request.NoClaimsYears);
         var percentOff = decimal.ToInt32(discount * 100m);
-        sheet.Factor("No-claims bonus", $"{request.NoClaimsYears} years, {percentOff}% off", 1m - discount);
+        sheet.Factor("No-claims bonus", $"{Years(request.NoClaimsYears)}, {percentOff}% off", 1m - discount);
         sheet.Factor("Voluntary excess", Pounds(request.VoluntaryExcess), VoluntaryExcessFactor(request.VoluntaryExcess));
 
         if (request.Breakdown)
@@ -246,6 +246,9 @@ public static class RatingEngine
     private static int CompulsoryExcess(int age) => age < 25 ? 500 : 250;
 
     private static string Pounds(int amount) => "£" + amount.ToString("N0", British);
+
+    // "1 year", "6 years".
+    private static string Years(int count) => count == 1 ? "1 year" : count.ToString(British) + " years";
 
     private sealed record AreaBand(string Band, decimal Factor, string[] Areas);
 

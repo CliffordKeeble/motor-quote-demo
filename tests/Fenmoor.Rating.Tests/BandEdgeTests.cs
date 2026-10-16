@@ -63,6 +63,28 @@ public class BandEdgeTests
     }
 
     [Theory]
+    [InlineData(0, "0 years with a full licence")]
+    [InlineData(1, "1 year with a full licence")]
+    [InlineData(2, "2 years with a full licence")]
+    public void Driving_experience_says_year_for_one(int years, string detail)
+    {
+        var request = Answers.WorkedExample with { LicenceYears = years, NoClaimsYears = 0 };
+
+        Assert.Equal(detail, RatingEngine.Rate(request).Line("Driving experience").Detail);
+    }
+
+    [Theory]
+    [InlineData(0, "0 years, 0% off")]
+    [InlineData(1, "1 year, 15% off")]
+    [InlineData(2, "2 years, 25% off")]
+    public void No_claims_bonus_says_year_for_one(int years, string detail)
+    {
+        var request = Answers.WorkedExample with { LicenceYears = 30, NoClaimsYears = years };
+
+        Assert.Equal(detail, RatingEngine.Rate(request).Line("No-claims bonus").Detail);
+    }
+
+    [Theory]
     [InlineData(4999, 0.95)]
     [InlineData(5000, 1.0)]
     [InlineData(14999, 1.0)]
