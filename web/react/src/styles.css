@@ -58,6 +58,7 @@ h1 {
 
 h1:focus {
   outline: none;
+  box-shadow: none;
 }
 
 h2 {
