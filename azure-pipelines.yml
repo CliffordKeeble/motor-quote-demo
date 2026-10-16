@@ -36,6 +36,13 @@ stages:
               packageType: sdk
               useGlobalJson: true
 
+          # The tests now run on .NET 9 and need its runtime and the ASP.NET Core 9 runtime; global.json still picks the 10.0.4xx SDK to build.
+          - task: UseDotNet@2
+            displayName: .NET 9 SDK (runtimes for the tests)
+            inputs:
+              packageType: sdk
+              version: 9.x
+
           - script: dotnet restore motor-quote-demo.slnx
             displayName: Restore
 
@@ -122,7 +129,7 @@ stages:
 
           # skip_app_build and skip_api_build: nothing is built here, so what ships is what was tested.
           # With skip_app_build, app_location is the build output, and output_location stays empty.
-          # SWA_TOKEN_REACT is a secret variable of the pipeline (docs/DEPLOY.md, step 4).
+          # SWA_TOKEN_REACT is a secret variable of the pipeline (docs/DEPLOY.md, step 5).
           - task: AzureStaticWebApp@0
             displayName: Deploy to swa-motor-quote-react
             inputs:
