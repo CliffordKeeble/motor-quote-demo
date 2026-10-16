@@ -1,0 +1,8 @@
+{
+  "env": {
+    "GIT_AUTHOR_NAME": "MrCode",
+    "GIT_AUTHOR_EMAIL": "clifford.keeble@googlemail.com",
+    "GIT_COMMITTER_NAME": "MrCode",
+    "GIT_COMMITTER_EMAIL": "clifford.keeble@googlemail.com"
+  }
+}
