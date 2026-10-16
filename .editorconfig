@@ -10,6 +10,10 @@ indent_size = 4
 [*.{json,yaml,yml,ts,tsx,css,html,md,props,csproj,slnx}]
 indent_size = 2
 
+[contracts/examples/*.json]
+# The golden file is the exact bytes of the API's response body, which has no final newline.
+insert_final_newline = false
+
 [*.cs]
 # Analyzer bar: see Directory.Build.props. Exceptions are listed here, each with its reason.
 

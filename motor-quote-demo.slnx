@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Fenmoor.Api/Fenmoor.Api.csproj" />
     <Project Path="src/Fenmoor.Rating/Fenmoor.Rating.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Fenmoor.Api.Tests/Fenmoor.Api.Tests.csproj" />
     <Project Path="tests/Fenmoor.Rating.Tests/Fenmoor.Rating.Tests.csproj" />
   </Folder>
 </Solution>

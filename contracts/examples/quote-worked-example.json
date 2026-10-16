@@ -1,0 +1,119 @@
+{
+  "reference": "FM-ABC123",
+  "validUntil": "2026-11-15",
+  "lines": [
+    {
+      "label": "Starting price",
+      "detail": "Comprehensive",
+      "kind": "base",
+      "amount": 400.00,
+      "runningTotal": 400.00
+    },
+    {
+      "label": "Your age",
+      "detail": "42 on the start date",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 400.00
+    },
+    {
+      "label": "Driving experience",
+      "detail": "20 years with a full licence",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 400.00
+    },
+    {
+      "label": "Your car",
+      "detail": "Insurance group 17",
+      "kind": "factor",
+      "multiplier": 1.04,
+      "amount": 16.00,
+      "runningTotal": 416.00
+    },
+    {
+      "label": "Car value",
+      "detail": "£14,500",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 416.00
+    },
+    {
+      "label": "Where you live",
+      "detail": "PE postcode area, band A",
+      "kind": "factor",
+      "multiplier": 0.85,
+      "amount": -62.40,
+      "runningTotal": 353.60
+    },
+    {
+      "label": "Where it is kept overnight",
+      "detail": "Driveway",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 353.60
+    },
+    {
+      "label": "Annual mileage",
+      "detail": "5,000 to 10,000 miles",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 353.60
+    },
+    {
+      "label": "What the car is used for",
+      "detail": "Social and commuting",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 353.60
+    },
+    {
+      "label": "Claims in the last 5 years",
+      "detail": "0",
+      "kind": "factor",
+      "multiplier": 1.0,
+      "amount": 0.00,
+      "runningTotal": 353.60
+    },
+    {
+      "label": "No-claims bonus",
+      "detail": "6 years, 52% off",
+      "kind": "factor",
+      "multiplier": 0.48,
+      "amount": -183.87,
+      "runningTotal": 169.73
+    },
+    {
+      "label": "Voluntary excess",
+      "detail": "£250",
+      "kind": "factor",
+      "multiplier": 0.93,
+      "amount": -11.88,
+      "runningTotal": 157.85
+    },
+    {
+      "label": "Breakdown cover",
+      "detail": "Added cover",
+      "kind": "addon",
+      "amount": 45.00,
+      "runningTotal": 202.85
+    },
+    {
+      "label": "Insurance Premium Tax",
+      "detail": "12% on everything above",
+      "kind": "tax",
+      "amount": 24.34,
+      "runningTotal": 227.19
+    }
+  ],
+  "annual": 227.19,
+  "monthly": 20.45,
+  "compulsoryExcess": 250,
+  "voluntaryExcess": 250
+}
