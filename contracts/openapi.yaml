@@ -1,0 +1,225 @@
+openapi: 3.1.0
+info:
+  title: Fenmoor Motor quote API
+  version: 1.0.0
+  description: |
+    The API behind the Fenmoor Motor quote demo. The insurer is fictional and the prices are
+    illustrative. Nothing a caller sends is stored, and no answer is written to a log.
+
+    This document is the contract. The C# API and the generated TypeScript types both answer to it.
+    `contracts/examples/quote-worked-example.json` is its golden example: the C# tests produce it
+    byte for byte and the React tests render it.
+servers:
+  - url: /api
+    description: Same origin. Azure Static Web Apps puts a function app at /api.
+paths:
+  /vehicles:
+    get:
+      operationId: getVehicles
+      summary: The six sample cars the quote form offers
+      responses:
+        '200':
+          description: The sample cars, in the order the form shows them.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+  /quote:
+    post:
+      operationId: postQuote
+      summary: Validate the answers, rate them and return an itemised quote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+      responses:
+        '200':
+          description: The quote, with every step of how the price was worked out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        '400':
+          description: |
+            One or more answers were refused. Each key in `errors` is a property of the request,
+            and its message is the one the browser shows for the same answer. A body that is not
+            valid JSON is refused under the key `request`.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+components:
+  schemas:
+    CoverLevel:
+      type: string
+      enum: [comprehensive, tpft, tpo]
+      description: Comprehensive; third party, fire and theft; third party only.
+    Overnight:
+      type: string
+      enum: [garage, driveway, street]
+    CarUse:
+      type: string
+      enum: [social, commuting, business]
+    Mileage:
+      type: string
+      enum: [under5k, 5to10k, 10to15k, over15k]
+    Fuel:
+      type: string
+      enum: [Petrol, Diesel, Hybrid, Electric]
+    LineKind:
+      type: string
+      enum: [base, factor, addon, tax]
+    Vehicle:
+      type: object
+      required: [id, make, model, year, fuel, group]
+      properties:
+        id:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        fuel:
+          $ref: '#/components/schemas/Fuel'
+        group:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Insurance group. Invented for this demo, not the published rating.
+    QuoteRequest:
+      type: object
+      required:
+        - vehicleId
+        - carValue
+        - overnight
+        - mileage
+        - use
+        - dateOfBirth
+        - licenceYears
+        - postcode
+        - noClaimsYears
+        - claimsLast5Years
+        - cover
+        - voluntaryExcess
+        - startDate
+      properties:
+        vehicleId:
+          type: string
+          description: The id of one of the cars from GET /vehicles.
+        carValue:
+          type: integer
+          minimum: 500
+          maximum: 250000
+          description: What the car is worth today, in whole pounds.
+        overnight:
+          $ref: '#/components/schemas/Overnight'
+        mileage:
+          $ref: '#/components/schemas/Mileage'
+        use:
+          $ref: '#/components/schemas/CarUse'
+        dateOfBirth:
+          type: string
+          format: date
+          description: The driver must be 17 to 99 on the day the quote is asked for.
+        licenceYears:
+          type: integer
+          minimum: 0
+          description: Whole years with a full UK licence. At most the driver's age less 17.
+        postcode:
+          type: string
+          description: A full UK postcode, like PE38 9AB.
+        noClaimsYears:
+          type: integer
+          minimum: 0
+          description: Whole years of no-claims bonus. At most licenceYears.
+        claimsLast5Years:
+          type: integer
+          enum: [0, 1, 2]
+          description: Two means two or more.
+        cover:
+          $ref: '#/components/schemas/CoverLevel'
+        voluntaryExcess:
+          type: integer
+          enum: [0, 100, 250, 500]
+        startDate:
+          type: string
+          format: date
+          description: From today up to 30 days ahead, by the London date.
+        breakdown:
+          type: boolean
+          default: false
+        legalExpenses:
+          type: boolean
+          default: false
+    QuoteLine:
+      type: object
+      required: [label, detail, kind, amount, runningTotal]
+      properties:
+        label:
+          type: string
+        detail:
+          type: string
+        kind:
+          $ref: '#/components/schemas/LineKind'
+        multiplier:
+          type: number
+          description: Present on factor lines only.
+        amount:
+          type: number
+          description: What this line added or took off, in pounds and pence.
+        runningTotal:
+          type: number
+          description: The price so far, in pounds and pence.
+    Quote:
+      type: object
+      required:
+        - reference
+        - validUntil
+        - lines
+        - annual
+        - monthly
+        - compulsoryExcess
+        - voluntaryExcess
+      properties:
+        reference:
+          type: string
+          pattern: '^FM-[A-Z0-9]{6}$'
+        validUntil:
+          type: string
+          format: date
+          description: Thirty days after the London date the quote was made.
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuoteLine'
+        annual:
+          type: number
+        monthly:
+          type: number
+        compulsoryExcess:
+          type: integer
+        voluntaryExcess:
+          type: integer
+    ValidationProblemDetails:
+      type: object
+      required: [status, errors]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        errors:
+          type: object
+          description: One entry per refused field, keyed by the request's property name.
+          additionalProperties:
+            type: array
+            items:
+              type: string
