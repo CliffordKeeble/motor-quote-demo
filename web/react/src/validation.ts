@@ -48,7 +48,10 @@ export function validateStep(step: number, a: Answers): Errors {
 
     const licence = whole(a.licenceYears);
     if (Number.isNaN(licence)) e.licenceYears = 'Enter the number of whole years, like 5';
-    else if (!Number.isNaN(age) && licence > age - 17) e.licenceYears = `At ${age} you can have held a licence for ${Math.max(age - 17, 0)} years at most`;
+    else if (!Number.isNaN(age) && licence > age - 17) {
+      const most = Math.max(age - 17, 0);
+      e.licenceYears = `At ${age} you can have held a licence for ${most} ${most === 1 ? 'year' : 'years'} at most`;
+    }
 
     if (!POSTCODE.test(a.postcode.trim())) e.postcode = 'Enter a full UK postcode, like PE38 9AB';
 

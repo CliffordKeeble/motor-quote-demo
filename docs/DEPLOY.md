@@ -10,14 +10,16 @@ This pipeline deploys the React one. Replace `<ORG>` below with your organisatio
 
 ## 1. An Azure DevOps organisation, billing linked to the subscription
 
-*Portal.* Use the organisation 1016-SKETCH-1 found, or create one at <https://dev.azure.com>
-("Create new organization").
+*Portal.* Create one at <https://dev.azure.com> ("Create new organization"). Learn's *Create an
+organization* (dated 4 Mar 2026) picks the Azure subscription inside the **New organization**
+form: choose the subscription that holds `rg-motor-quote-demo` there, and the billing is linked as
+the organisation is made.
 
-Then link its billing: **Organization settings, Billing, Set up billing**, and pick the Azure
-subscription that holds `rg-motor-quote-demo`. That link is what grants the free Microsoft-hosted
-job: 1,800 minutes a month. Without it, the first run is refused with "No hosted parallelism has
-been purchased or granted". Setting the billing up does not by itself cost anything: the paid
-extras are separate items you leave at zero.
+The separate billing step is only for an organisation that already exists (the one 1016-SKETCH-1
+found): **Organization settings, Billing, Set up billing**, and pick the same subscription. That
+link is what grants the free Microsoft-hosted job: 1,800 minutes a month. Without it, the first
+run is refused with "No hosted parallelism has been purchased or granted". Setting the billing up
+does not by itself cost anything: the paid extras are separate items you leave at zero.
 
 ## 2. A private project
 
@@ -28,14 +30,27 @@ az devops project create --name motor-quote-demo --visibility private --organiza
 
 (`az login` first if you are not signed in.)
 
-## 3. The pipeline, from this GitHub repository
+## 3. Push the code to GitHub
 
-*Portal.* In the project: **Pipelines, Create Pipeline, GitHub**. Approve the **Azure Pipelines**
-GitHub app for `CliffordKeeble/motor-quote-demo` when it asks (this is the one place GitHub is
-given access), choose **Existing Azure Pipelines YAML file**, branch `main`, path
-`/azure-pipelines.yml`. **Save**, do not run yet. Name it `motor-quote-demo`.
+*Existing Azure Pipelines YAML file*, in the next step, reads `azure-pipelines.yml` from GitHub's
+`main`, so the code has to be there first. The code is on `main` in the local clone:
 
-## 4. The deployment token, as a secret variable
+```powershell
+git -C C:\Dev\motor-quote-demo push origin main
+```
+
+No pipeline exists yet, so this deploys nothing.
+
+## 4. The pipeline, from this GitHub repository
+
+*Portal.* In the project: **Pipelines, Create Pipeline, GitHub**. If the Azure Pipelines OAuth
+prompt names any account other than `CliffordKeeble`, cancel it and sign in to GitHub as
+`CliffordKeeble` first, then start again. Approve the **Azure Pipelines** GitHub app for
+`CliffordKeeble/motor-quote-demo` when it asks (this is the one place GitHub is given access),
+choose **Existing Azure Pipelines YAML file**, branch `main`, path `/azure-pipelines.yml`.
+**Save**, do not run yet. Name it `motor-quote-demo`.
+
+## 5. The deployment token, as a secret variable
 
 Copy the token to the clipboard without printing it:
 
@@ -56,15 +71,10 @@ Never paste the token into a file or a chat. If one is ever pasted somewhere, ro
 az staticwebapp secrets reset-api-key --name swa-motor-quote-react --resource-group rg-motor-quote-demo
 ```
 
-## 5. Run the pipeline
+## 6. Run the pipeline
 
-The code is on `main` in the local clone. Push it, and the pipeline starts by itself:
-
-```powershell
-git -C C:\Dev\motor-quote-demo push origin main
-```
-
-Or start it by hand:
+The code is already on GitHub (step 3), so nothing starts by itself. Start the first run by hand,
+now that the secret variable is set (from here on, a push to `main` starts it):
 
 ```powershell
 az pipelines run --name motor-quote-demo --branch main --project motor-quote-demo --organization https://dev.azure.com/<ORG>
@@ -80,13 +90,13 @@ az staticwebapp show --name swa-motor-quote-react --resource-group rg-motor-quot
 Open it and run the worked example: **Fill in example answers**, Continue, Continue, Get my
 quote. The price is £227.19 a year.
 
-## 6. A budget alert on the resource group, at £1
+## 7. A budget alert on the resource group, at £1
 
 *Portal.* **Cost Management, Budgets, Add.** Scope: the resource group `rg-motor-quote-demo`.
 Amount £1, monthly. Alert condition: actual cost, 100% of the budget, and your email address.
 (The Free plan cannot bill for the apps. This catches anything else that ever lands in the group.)
 
-## 7. If the hosted job never starts
+## 8. If the hosted job never starts
 
 Microsoft says a new organisation can wait a few days for the free grant (there is a request form
 linked from the "No hosted parallelism" error). The fallback is a **self-hosted agent on this
@@ -112,7 +122,7 @@ Remove-Item Env:SWA_CLI_DEPLOYMENT_TOKEN
 ```
 
 The token goes in an environment variable the CLI reads (`SWA_CLI_DEPLOYMENT_TOKEN`), and is never
-printed. The API runtime (`dotnet-isolated:10.0`) is read from `staticwebapp.config.json`, which is
+printed. The API runtime (`dotnet-isolated:9.0`) is read from `staticwebapp.config.json`, which is
 in `dist`. The CLI's documentation only says `--api-location` is an API *source* folder; it does
 not say a published .NET folder is accepted. This command has not been run, and is the fallback's
 own risk. (`publish/` is in `.gitignore`.)

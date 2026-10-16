@@ -1,7 +1,19 @@
 <Project>
 
+  <!-- net9.0, not net10.0, on purpose. Why: on 16 Oct 2026 two deploys of this app built green,
+       uploaded, and then failed at Static Web Apps' Functions step with "Failed to deploy the Azure
+       Functions." about 16 s after the upload, with apiRuntime dotnet-isolated:10.0.
+       The evidence: Learn's runtime table lists dotnet-isolated:10.0, but the docs change that added
+       the row (MicrosoftDocs/azure-docs PR #128828, merged 2 Oct 2026) left its own gate unchecked
+       (".NET 10 rollout completed in all regions"), and a Microsoft moderator wrote on 29 Apr 2026
+       that .NET 10 was not supported for managed APIs.
+       The SDK stays .NET 10 (global.json); only the target moves.
+       To undo it: once a deploy with dotnet-isolated:10.0 succeeds, set net10.0 here and
+       "apiRuntime": "dotnet-isolated:10.0" in web/react/public/staticwebapp.config.json (this file's
+       partner; JSON takes no comment) in the same commit. Static Web Apps ends .NET 8 and .NET 9
+       support on 10 November 2026 (Learn's runtime table). Board A20. -->
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 

@@ -64,6 +64,11 @@ describe('step 2, about you', () => {
     expect(today17).toEqual({});
   });
 
+  it('says 1 year, not 1 years, when the most is one', () => {
+    expect(validateStep(1, { ...valid(), dateOfBirth: '2008-01-01', licenceYears: '2', noClaimsYears: '0' }))
+      .toEqual({ licenceYears: 'At 18 you can have held a licence for 1 year at most' });
+  });
+
   it('takes a postcode in any case, with or without the space', () => {
     expect(validateStep(1, withAnswer('postcode', 'pe389ab'))).toEqual({});
     expect(validateStep(1, withAnswer('postcode', ' EC1A 1BB '))).toEqual({});

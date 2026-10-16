@@ -70,6 +70,22 @@ public class RefusalTests
     public Task About_you_answers(string field, string valueJson, string expectedKeys, string expectedMessage) =>
         AssertRefusedAsync(field, valueJson, expectedKeys, expectedMessage);
 
+    // An 18-year-old can have held a licence for one year at most: "1 year", not "1 years".
+    [Fact]
+    public async Task At_18_the_most_is_one_year()
+    {
+        var api = new ApiHarness();
+        var body = ApiHarness.WorkedExampleBody();
+        body["dateOfBirth"] = "2008-01-01";
+        body["licenceYears"] = 2;
+        body["noClaimsYears"] = 0;
+
+        var response = await api.PostQuoteAsync(body);
+
+        Assert.Equal(["licenceYears"], ValidationAssert.ErrorKeys(response));
+        Assert.Equal("At 18 you can have held a licence for 1 year at most", ValidationAssert.Message(response, "licenceYears"));
+    }
+
     // Step 3, your cover
     [Theory]
     [InlineData("cover", "\"gold\"", "cover", "Choose a level of cover")]
