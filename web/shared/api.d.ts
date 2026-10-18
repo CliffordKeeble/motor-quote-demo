@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The six sample cars the quote form offers */
+        /** The sample cars the quote form offers */
         get: operations["getVehicles"];
         put?: never;
         post?: never;

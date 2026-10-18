@@ -16,7 +16,7 @@ paths:
   /vehicles:
     get:
       operationId: getVehicles
-      summary: The six sample cars the quote form offers
+      summary: The sample cars the quote form offers
       responses:
         '200':
           description: The sample cars, in the order the form shows them.
