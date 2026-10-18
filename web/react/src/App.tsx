@@ -39,6 +39,9 @@ export default function App() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehiclesStatus, setVehiclesStatus] = useState<VehiclesStatus>('loading');
   const heading = useRef<HTMLHeadingElement>(null);
+  const message = useRef<HTMLDivElement>(null);
+  // Counts the presses of Continue that could not go on, so each one moves focus to the message.
+  const [stopped, setStopped] = useState(0);
 
   const loadVehicles = useCallback(async () => {
     setVehiclesStatus('loading');
@@ -56,6 +59,12 @@ export default function App() {
     heading.current?.focus();
   }, [step]);
 
+  // And to the message when Continue could not go on. Focus brings it into view: on a phone the
+  // button is at the foot of the form and the message is at its head, out of sight.
+  useEffect(() => {
+    if (stopped > 0) message.current?.focus();
+  }, [stopped]);
+
   const set = (field: keyof Answers, value: string) => {
     setAnswers((a) => ({ ...a, [field]: value }));
     setErrors((e) => ({ ...e, [field]: undefined }));
@@ -66,7 +75,10 @@ export default function App() {
     // Keep the server's messages for answers on other steps: they are still waiting for a change.
     setErrors({ ...onOtherSteps(errors, step), ...found });
     setFailed(false);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) {
+      setStopped((n) => n + 1);
+      return;
+    }
     if (step < 2) {
       setStep(step + 1);
       return;
@@ -92,6 +104,7 @@ export default function App() {
       }
     }
     setFailed(true);
+    setStopped((n) => n + 1);
   }
 
   const back = () => {
@@ -130,19 +143,27 @@ export default function App() {
             </h1>
 
             {step === 0 && (
-              <button type="button" className="link example" onClick={() => setAnswers(exampleAnswers())}>
+              <button
+                type="button"
+                className="link example"
+                onClick={() => {
+                  setAnswers(exampleAnswers());
+                  setErrors({});
+                  setFailed(false);
+                }}
+              >
                 Fill in example answers
               </button>
             )}
 
             {errorCount > 0 && (
-              <div className="error-summary" role="alert">
+              <div className="error-summary" role="alert" tabIndex={-1} ref={failed ? undefined : message}>
                 {errorCount === 1 ? 'One answer needs' : `${errorCount} answers need`} changing before you can continue.
               </div>
             )}
 
             {failed && (
-              <div className="error-summary" role="alert">
+              <div className="error-summary" role="alert" tabIndex={-1} ref={message}>
                 We couldn’t work out your price just now. Your answers are all still here. Please try again.
               </div>
             )}

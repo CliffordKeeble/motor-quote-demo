@@ -196,3 +196,42 @@ describe('the sample cars', () => {
     expect(screen.queryByText(/We couldn’t load the sample cars/)).not.toBeInTheDocument();
   });
 });
+
+// UI test of the live demo, 18 Oct 2026 (board A20). Both seen on the deployed site first.
+describe('after a Continue that cannot go on', () => {
+  it('clears the old messages when the example answers are filled in', async () => {
+    stubApi(() => json(golden));
+    const user = userEvent.setup();
+
+    render(<App />);
+    await screen.findByRole('option', { name: /Golf/ });
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('5 answers need changing');
+
+    await user.click(screen.getByRole('button', { name: 'Fill in example answers' }));
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByText('Choose your car')).not.toBeInTheDocument();
+  });
+
+  it('moves focus to the message, so a phone shows it rather than staying at the button', async () => {
+    stubApi(() => json(golden));
+    const user = userEvent.setup();
+
+    render(<App />);
+    await screen.findByRole('option', { name: /Golf/ });
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.getByRole('alert')).toHaveFocus();
+  });
+
+  it('moves focus to the message when the quote cannot be had', async () => {
+    stubApi(() => Promise.reject(new TypeError('Failed to fetch')));
+
+    await getQuote(userEvent.setup());
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('We couldn’t work out your price just now');
+    expect(alert).toHaveFocus();
+  });
+});
