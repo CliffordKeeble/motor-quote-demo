@@ -17,7 +17,7 @@ export function CarStep({ answers, errors, set, vehicles, vehiclesStatus, retryV
       <Field
         id="vehicleId"
         label="Which car do you want to insure?"
-        hint={vehiclesStatus === 'loading' ? 'Loading the sample cars…' : 'This demo has seven sample cars.'}
+        hint={vehiclesStatus === 'loading' ? 'Loading the sample cars…' : 'This demo has six sample cars.'}
         error={errors.vehicleId}
       >
         <select
