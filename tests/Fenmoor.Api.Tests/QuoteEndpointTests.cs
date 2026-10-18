@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Fenmoor.Rating;
 using Microsoft.Extensions.Logging;
 
 namespace Fenmoor.Api.Tests;
@@ -135,6 +136,57 @@ public class QuoteEndpointTests
         Assert.Equal("Petrol", cars[0]!["fuel"]!.GetValue<string>());
         Assert.Equal(17, cars[2]!["group"]!.GetValue<int>());
         Assert.Equal("Diesel", cars[3]!["fuel"]!.GetValue<string>());
+    }
+
+    // contracts/openapi.yaml, Vehicle: all six fields required, fuel one of four strings, group 1
+    // to 50. Checked for every car on the wire, not only the few the test above names.
+    [Fact]
+    public async Task Every_car_on_the_wire_carries_the_contracts_six_fields()
+    {
+        var api = new ApiHarness();
+
+        var response = await api.GetVehiclesAsync();
+
+        Assert.Equal(200, response.Status);
+        var cars = JsonNode.Parse(response.Text)!.AsArray();
+        Assert.Equal(VehicleCatalogue.All.Count, cars.Count);
+        Assert.All(cars, car =>
+        {
+            var fields = car!.AsObject();
+            Assert.Equal(["fuel", "group", "id", "make", "model", "year"], fields.Select(f => f.Key).Order(StringComparer.Ordinal));
+            Assert.False(string.IsNullOrWhiteSpace(fields["id"]!.GetValue<string>()));
+            Assert.False(string.IsNullOrWhiteSpace(fields["make"]!.GetValue<string>()));
+            Assert.False(string.IsNullOrWhiteSpace(fields["model"]!.GetValue<string>()));
+            Assert.Contains(fields["fuel"]!.GetValue<string>(), (string[])["Petrol", "Diesel", "Hybrid", "Electric"]);
+            Assert.InRange(fields["group"]!.GetValue<int>(), 1, 50);
+            Assert.True(fields["year"]!.GetValue<int>() > 0);
+        });
+    }
+
+    public static TheoryData<string> EveryCarId()
+    {
+        var ids = new TheoryData<string>();
+        foreach (var vehicle in VehicleCatalogue.All)
+        {
+            ids.Add(vehicle.Id);
+        }
+
+        return ids;
+    }
+
+    // Every car the dropdown offers can be quoted through the function, validation included.
+    [Theory]
+    [MemberData(nameof(EveryCarId))]
+    public async Task Every_car_the_form_offers_can_be_quoted(string vehicleId)
+    {
+        var api = new ApiHarness();
+        var body = ApiHarness.WorkedExampleBody();
+        body["vehicleId"] = vehicleId;
+
+        var response = await api.PostQuoteAsync(body);
+
+        Assert.Equal(200, response.Status);
+        Assert.True(JsonNode.Parse(response.Text)!["annual"]!.GetValue<decimal>() > 0m);
     }
 
     [Fact]

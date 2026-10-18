@@ -90,6 +90,16 @@ az staticwebapp show --name swa-motor-quote-react --resource-group rg-motor-quot
 Open it and run the worked example: **Fill in example answers**, Continue, Continue, Get my
 quote. The price is £227.19 a year.
 
+The run checks that for you as its last step, **Check the live site answers**
+(`tools/smoke_live.py`): within six minutes the live page must load this build's script, and the
+API must answer the car list and price the worked example at £227.19. If not, the run goes red and
+says what the site last answered; the deploy has already replaced the site by then, so look at it,
+and revert and push if it is down. The same check runs by hand from this machine after any deploy:
+
+```cmd
+python C:\Dev\motor-quote-demo\tools\smoke_live.py https://wonderful-mushroom-05443000f.6.azurestaticapps.net
+```
+
 ## 7. A budget alert on the resource group, at £1
 
 *Portal.* **Cost Management, Budgets, Add.** Scope: the resource group `rg-motor-quote-demo`.

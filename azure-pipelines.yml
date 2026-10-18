@@ -4,7 +4,9 @@
 # What Deploy ships is what Build tested: the built output is published as artifacts and the
 # Static Web Apps task is told not to build anything itself.
 #
-# Written, not run: it was checked as YAML only. docs/DEPLOY.md is how to bring it to life.
+# Deploy ends by checking the live site (tools/smoke_live.py), because a deploy can report success
+# while the live API is down: 18 Oct 2026, about 12 minutes, board A20. So green means the demo
+# answers, not only that the upload went through. docs/DEPLOY.md is how the pipeline was set up.
 
 trigger:
   branches:
@@ -21,6 +23,8 @@ pool:
 
 variables:
   buildConfiguration: Release
+  # The React app's live address, which the check after the deploy calls.
+  siteUrl: https://wonderful-mushroom-05443000f.6.azurestaticapps.net
 
 stages:
   - stage: Build
@@ -100,6 +104,13 @@ stages:
               targetPath: $(Build.ArtifactStagingDirectory)/api
               artifact: api
 
+          # The live check travels as an artifact too, so Deploy still checks nothing out.
+          - task: PublishPipelineArtifact@1
+            displayName: Artifact, the check after the deploy
+            inputs:
+              targetPath: tools/smoke_live.py
+              artifact: smoke
+
   - stage: Deploy
     dependsOn: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
@@ -134,3 +145,14 @@ stages:
               skip_app_build: true
               skip_api_build: true
               azure_static_web_apps_api_token: $(SWA_TOKEN_REACT)
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Fetch the check after the deploy
+            inputs:
+              artifact: smoke
+              path: $(Pipeline.Workspace)/smoke
+
+          # Red if, within six minutes, the live page is not this build's or the API does not
+          # answer the car list and the worked example. tools/smoke_live.py says why it exists.
+          - script: python3 "$(Pipeline.Workspace)/smoke/smoke_live.py" "$(siteUrl)" "$(Pipeline.Workspace)/deploy/web/index.html"
+            displayName: Check the live site answers
