@@ -36,13 +36,6 @@ stages:
               packageType: sdk
               useGlobalJson: true
 
-          # The tests now run on .NET 9 and need its runtime and the ASP.NET Core 9 runtime; global.json still picks the 10.0.4xx SDK to build.
-          - task: UseDotNet@2
-            displayName: .NET 9 SDK (runtimes for the tests)
-            inputs:
-              packageType: sdk
-              version: 9.x
-
           - script: dotnet restore motor-quote-demo.slnx
             displayName: Restore
 

@@ -122,7 +122,7 @@ Remove-Item Env:SWA_CLI_DEPLOYMENT_TOKEN
 ```
 
 The token goes in an environment variable the CLI reads (`SWA_CLI_DEPLOYMENT_TOKEN`), and is never
-printed. The API runtime (`dotnet-isolated:9.0`) is read from `staticwebapp.config.json`, which is
+printed. The API runtime (`dotnet-isolated:10.0`) is read from `staticwebapp.config.json`, which is
 in `dist`. The CLI's documentation only says `--api-location` is an API *source* folder; it does
 not say a published .NET folder is accepted. This command has not been run, and is the fallback's
 own risk. (`publish/` is in `.gitignore`.)
