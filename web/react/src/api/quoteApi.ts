@@ -26,7 +26,7 @@ export async function getQuote(request: QuoteRequest): Promise<QuoteOutcome> {
   }
 }
 
-// The six sample cars, or null if they could not be fetched.
+// The sample cars, or null if they could not be fetched.
 export async function getVehicles(): Promise<Vehicle[] | null> {
   try {
     const response = await fetch('/api/vehicles', { headers: { Accept: 'application/json' } });

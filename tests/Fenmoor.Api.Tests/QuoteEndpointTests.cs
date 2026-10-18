@@ -121,7 +121,7 @@ public class QuoteEndpointTests
     }
 
     [Fact]
-    public async Task The_six_cars_come_back_with_the_contracts_strings()
+    public async Task The_seven_cars_come_back_with_the_contracts_strings()
     {
         var api = new ApiHarness();
 
@@ -130,10 +130,11 @@ public class QuoteEndpointTests
         Assert.Equal(200, response.Status);
         var cars = JsonNode.Parse(response.Text)!.AsArray();
         Assert.Equal(
-            ["ford-fiesta-2019", "toyota-yaris-2022", "vw-golf-2021", "nissan-leaf-2020", "bmw-320d-2020", "tesla-model3-2023"],
+            ["ford-fiesta-2019", "toyota-yaris-2022", "vw-golf-2021", "alfa-giulietta-2010", "nissan-leaf-2020", "bmw-320d-2020", "tesla-model3-2023"],
             cars.Select(c => c!["id"]!.GetValue<string>()));
         Assert.Equal("Petrol", cars[0]!["fuel"]!.GetValue<string>());
         Assert.Equal(17, cars[2]!["group"]!.GetValue<int>());
+        Assert.Equal("Diesel", cars[3]!["fuel"]!.GetValue<string>());
     }
 
     [Fact]
