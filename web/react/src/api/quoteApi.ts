@@ -1,4 +1,4 @@
-import type { Quote, QuoteRequest, ValidationProblem, Vehicle } from '../types';
+import type { Quote, QuoteRequest, ValidationProblem, Vehicle } from '@shared/types';
 
 // What came back from POST /api/quote. A quote, or the server refusing some answers (400,
 // with a message for each), or anything else going wrong: no connection, a 5xx, a reply we

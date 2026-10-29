@@ -17,7 +17,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* The generated API types, shared with the Angular app in slice 2 */
+    /* web/shared: the generated API types, the browser's checks and the stylesheet, shared with the Angular app */
     "paths": {
       "@shared/*": ["../shared/*"]
     },

@@ -1,6 +1,6 @@
 import { Choice, Field, describe } from '../components/Field';
-import type { Vehicle } from '../types';
-import { vehicleName } from '../vehicleName';
+import type { Vehicle } from '@shared/types';
+import { vehicleName } from '@shared/vehicleName';
 import type { StepProps } from './stepProps';
 
 export type VehiclesStatus = 'loading' | 'ready' | 'failed';

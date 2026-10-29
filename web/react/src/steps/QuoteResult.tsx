@@ -1,4 +1,4 @@
-import type { Quote } from '../types';
+import type { Quote } from '@shared/types';
 
 const money = (n: number) => n.toLocaleString('en-GB', { style: 'currency', currency: 'GBP' });
 

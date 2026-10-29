@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import golden from '../../../contracts/examples/quote-worked-example.json';
 import App from './App';
-import type { Vehicle } from './types';
+import type { Vehicle } from '@shared/types';
 
 const vehicles: Vehicle[] = [
   { id: 'ford-fiesta-2019', make: 'Ford', model: 'Fiesta 1.0 EcoBoost Titanium', year: 2019, fuel: 'Petrol', group: 12 },
