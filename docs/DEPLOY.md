@@ -6,7 +6,8 @@ exact. Where it is a click, it says so, because Azure DevOps has no command for 
 
 The Azure side already exists: resource group `rg-motor-quote-demo` holds two Static Web Apps on
 the Free plan, `swa-motor-quote-react` and `swa-motor-quote-angular`, from `infra/main.bicep`.
-This pipeline deploys the React one. Replace `<ORG>` below with your organisation's name.
+This pipeline deploys both: the React page to the first, the Angular page to the second, each
+with the same API. Replace `<ORG>` below with your organisation's name.
 
 ## 1. An Azure DevOps organisation, billing linked to the subscription
 
@@ -65,7 +66,24 @@ paste, tick **Keep this value secret**, **OK**, **Save**. Then clear the clipboa
 Set-Clipboard -Value ' '
 ```
 
-Never paste the token into a file or a chat. If one is ever pasted somewhere, rotate it:
+**Then the same for the Angular app**, added with slice 2 (29 October 2026). Its token, as the
+secret variable `SWA_TOKEN_ANGULAR`, the same way:
+
+```powershell
+az staticwebapp secrets list --name swa-motor-quote-angular --resource-group rg-motor-quote-demo --query properties.apiKey -o tsv | Set-Clipboard
+```
+
+*Portal.* **New variable**, name `SWA_TOKEN_ANGULAR`, paste, tick **Keep this value secret**,
+**OK**, **Save**, and clear the clipboard as above. And its address, which is not a secret:
+
+```powershell
+az staticwebapp show --name swa-motor-quote-angular --resource-group rg-motor-quote-demo --query defaultHostname -o tsv
+```
+
+It goes in `azure-pipelines.yml` as `angularSiteUrl`, with `https://` in front, so the check
+after the Angular deploy knows where to look. Until it is there, that check fails and says so.
+
+Never paste a token into a file or a chat. If one is ever pasted somewhere, rotate it:
 
 ```powershell
 az staticwebapp secrets reset-api-key --name swa-motor-quote-react --resource-group rg-motor-quote-demo
@@ -80,7 +98,8 @@ now that the secret variable is set (from here on, a push to `main` starts it):
 az pipelines run --name motor-quote-demo --branch main --project motor-quote-demo --organization https://dev.azure.com/<ORG>
 ```
 
-Build runs the .NET and the React gates; Deploy runs after it, on `main` only. When it finishes,
+Build runs the .NET, React and Angular gates, then the Playwright suite through both built pages;
+Deploy runs after it, on `main` only, one job for each app. When it finishes,
 the live address is the default hostname of the app:
 
 ```powershell
@@ -88,7 +107,8 @@ az staticwebapp show --name swa-motor-quote-react --resource-group rg-motor-quot
 ```
 
 Open it and run the worked example: **Fill in example answers**, Continue, Continue, Get my
-quote. The price is £227.19 a year.
+quote. The price is £227.19 a year. The Angular app is the address from step 5, and gives the
+same price.
 
 The run checks that for you as its last step, **Check the live site answers**
 (`tools/smoke_live.py`): within six minutes the live page must load this build's script, and the
@@ -98,6 +118,18 @@ and revert and push if it is down. The same check runs by hand from this machine
 
 ```cmd
 python C:\Dev\motor-quote-demo\tools\smoke_live.py https://wonderful-mushroom-05443000f.6.azurestaticapps.net
+```
+
+The Playwright suite runs against the live sites too, from `web/e2e` (with Node 22; the first
+command fetches Chromium once). Replace `<ANGULAR-HOSTNAME>` with the address from step 5:
+
+```cmd
+cd C:\Dev\motor-quote-demo\web\e2e
+npm ci
+npx playwright install chromium
+set REACT_URL=https://wonderful-mushroom-05443000f.6.azurestaticapps.net
+set ANGULAR_URL=https://<ANGULAR-HOSTNAME>
+npx playwright test
 ```
 
 ## 7. A budget alert on the resource group, at £1

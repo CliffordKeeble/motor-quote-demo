@@ -1,10 +1,14 @@
-# Fenmoor Motor quote demo: build, test, and deploy the React front end with its API.
+# Fenmoor Motor quote demo: build, test, and deploy the React and Angular front ends, each with
+# the same API, to its own Static Web App.
 #
 # Build runs on every push to main and on every pull request. Deploy runs on main only.
 # What Deploy ships is what Build tested: the built output is published as artifacts and the
 # Static Web Apps task is told not to build anything itself.
 #
-# Deploy ends by checking the live site (tools/smoke_live.py), because a deploy can report success
+# Build ends by running one Playwright suite (web/e2e) through both built front ends, served
+# with their hosted headers and a stub of the API.
+#
+# Each deploy ends by checking its live site (tools/smoke_live.py), because a deploy can report success
 # while the live API is down: 18 Oct 2026, about 12 minutes, board A20. So green means the demo
 # answers, not only that the upload went through. docs/DEPLOY.md is how the pipeline was set up.
 
@@ -25,6 +29,8 @@ variables:
   buildConfiguration: Release
   # The React app's live address, which the check after the deploy calls.
   siteUrl: https://wonderful-mushroom-05443000f.6.azurestaticapps.net
+  # The Angular app's, the default hostname of swa-motor-quote-angular (docs/DEPLOY.md, step 5).
+  angularSiteUrl: ''
 
 stages:
   - stage: Build
@@ -88,6 +94,37 @@ stages:
             displayName: Build the page (vite build)
             workingDirectory: web/react
 
+          # ---- the Angular app ----
+          - script: npm ci
+            displayName: npm ci (Angular)
+            workingDirectory: web/angular
+
+          - script: npm test
+            displayName: Test (Angular, Vitest)
+            workingDirectory: web/angular
+
+          - script: npm audit --audit-level=high
+            displayName: npm audit (Angular)
+            workingDirectory: web/angular
+
+          # The Angular compiler type-checks the code and the templates as it builds.
+          - script: npm run build
+            displayName: Build the page (ng build)
+            workingDirectory: web/angular
+
+          # ---- one Playwright suite through both built pages ----
+          - script: npm ci
+            displayName: npm ci (Playwright)
+            workingDirectory: web/e2e
+
+          - script: npx playwright install --with-deps chromium
+            displayName: Chromium for Playwright
+            workingDirectory: web/e2e
+
+          - script: npx playwright test
+            displayName: Test both front ends (Playwright)
+            workingDirectory: web/e2e
+
           # ---- the outputs ----
           - script: dotnet publish src/Fenmoor.Api/Fenmoor.Api.csproj --configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/api
             displayName: Publish the API
@@ -97,6 +134,12 @@ stages:
             inputs:
               targetPath: web/react/dist
               artifact: web-react
+
+          - task: PublishPipelineArtifact@1
+            displayName: Artifact, the built Angular page
+            inputs:
+              targetPath: web/angular/dist/motor-quote-angular/browser
+              artifact: web-angular
 
           - task: PublishPipelineArtifact@1
             displayName: Artifact, the published API
@@ -156,3 +199,47 @@ stages:
           # answer the car list and the worked example. tools/smoke_live.py says why it exists.
           - script: python3 "$(Pipeline.Workspace)/smoke/smoke_live.py" "$(siteUrl)" "$(Pipeline.Workspace)/deploy/web/index.html"
             displayName: Check the live site answers
+
+      # The same again for the Angular app: the same API, its own Static Web App and token.
+      - job: DeployAngular
+        steps:
+          - checkout: none
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Fetch the built Angular page
+            inputs:
+              artifact: web-angular
+              path: $(Pipeline.Workspace)/deploy/web
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Fetch the published API
+            inputs:
+              artifact: api
+              path: $(Pipeline.Workspace)/deploy/api
+
+          # SWA_TOKEN_ANGULAR is a secret variable of the pipeline (docs/DEPLOY.md, step 5).
+          - task: AzureStaticWebApp@0
+            displayName: Deploy to swa-motor-quote-angular
+            inputs:
+              workingDirectory: $(Pipeline.Workspace)/deploy
+              app_location: web
+              api_location: api
+              output_location: ''
+              config_file_location: web
+              skip_app_build: true
+              skip_api_build: true
+              azure_static_web_apps_api_token: $(SWA_TOKEN_ANGULAR)
+
+          - task: DownloadPipelineArtifact@2
+            displayName: Fetch the check after the deploy
+            inputs:
+              artifact: smoke
+              path: $(Pipeline.Workspace)/smoke
+
+          - script: |
+              if [ -z "$(angularSiteUrl)" ]; then
+                echo "##vso[task.logissue type=error]angularSiteUrl is empty in azure-pipelines.yml, so the live Angular site cannot be checked (docs/DEPLOY.md, step 5)."
+                exit 1
+              fi
+              python3 "$(Pipeline.Workspace)/smoke/smoke_live.py" "$(angularSiteUrl)" "$(Pipeline.Workspace)/deploy/web/index.html"
+            displayName: Check the live Angular site answers

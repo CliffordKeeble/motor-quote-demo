@@ -9,7 +9,7 @@ something that checks the live site at least as well.
 
 It passes when, within the time budget:
   1. the live page loads the same script bundle as the built index.html, when one is given, so
-     the front end that was tested is the one being served;
+     the front end that was tested is the one being served (the React or the Angular one);
   2. GET /api/vehicles answers 200 with a non-empty JSON list that includes the worked example's
      car;
   3. POST /api/quote with the worked example, starting a week from today, answers 200 with
@@ -42,7 +42,9 @@ WORKED_EXAMPLE_CAR = "vw-golf-2021"
 WORKED_EXAMPLE_ANNUAL = 227.19
 WORKED_EXAMPLE_MONTHLY = 20.45
 
-BUNDLE = re.compile(r"/assets/index-[A-Za-z0-9_-]+\.js")
+# The page's script bundle: Vite names it /assets/index-<hash>.js (React), the Angular CLI
+# main-<hash>.js. Either way the hash changes with the build.
+BUNDLE = re.compile(r"/assets/index-[A-Za-z0-9_-]+\.js|\bmain-[A-Za-z0-9_-]+\.js")
 
 
 def log(message):
