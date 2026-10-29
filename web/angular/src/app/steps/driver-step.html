@@ -1,0 +1,70 @@
+<app-field for="dateOfBirth" label="Your date of birth" [error]="errors().dateOfBirth">
+  <input
+    id="dateOfBirth"
+    type="date"
+    [value]="answers().dateOfBirth"
+    (input)="typed('dateOfBirth', $event)"
+    [attr.aria-invalid]="!!errors().dateOfBirth"
+    [attr.aria-describedby]="describe('dateOfBirth', false, errors().dateOfBirth)"
+  />
+</app-field>
+
+<app-field
+  for="licenceYears"
+  label="How many years have you held a full UK licence?"
+  hint="Count whole years. Under a year is 0."
+  [error]="errors().licenceYears"
+>
+  <input
+    id="licenceYears"
+    class="short"
+    inputmode="numeric"
+    [value]="answers().licenceYears"
+    (input)="typed('licenceYears', $event)"
+    [attr.aria-invalid]="!!errors().licenceYears"
+    [attr.aria-describedby]="describe('licenceYears', true, errors().licenceYears)"
+  />
+</app-field>
+
+<app-field for="postcode" label="Where is the car kept?" hint="The postcode of the address" [error]="errors().postcode">
+  <input
+    id="postcode"
+    class="short postcode"
+    autocomplete="postal-code"
+    [value]="answers().postcode"
+    (input)="typed('postcode', $event)"
+    [attr.aria-invalid]="!!errors().postcode"
+    [attr.aria-describedby]="describe('postcode', true, errors().postcode)"
+  />
+</app-field>
+
+<app-field
+  for="noClaimsYears"
+  label="How many years of no-claims bonus do you have?"
+  hint="Years in a row of driving your own insured car without making a claim"
+  [error]="errors().noClaimsYears"
+>
+  <input
+    id="noClaimsYears"
+    class="short"
+    inputmode="numeric"
+    [value]="answers().noClaimsYears"
+    (input)="typed('noClaimsYears', $event)"
+    [attr.aria-invalid]="!!errors().noClaimsYears"
+    [attr.aria-describedby]="describe('noClaimsYears', true, errors().noClaimsYears)"
+  />
+</app-field>
+
+<app-choice
+  name="claimsLast5Years"
+  legend="Claims in the last 5 years"
+  hint="Any claim on a car policy, whoever was at fault"
+  [error]="errors().claimsLast5Years"
+  [value]="answers().claimsLast5Years"
+  (picked)="put('claimsLast5Years', $event)"
+  [options]="[
+    { value: '0', label: 'None' },
+    { value: '1', label: 'One' },
+    { value: '2', label: 'Two or more' },
+  ]"
+/>

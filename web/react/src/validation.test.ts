@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDays, ageOn, emptyAnswers, exampleAnswers, toRequest, today, validateStep } from './validation';
-import type { Answers } from './types';
+import { addDays, ageOn, emptyAnswers, exampleAnswers, toRequest, today, validateStep } from '@shared/validation';
+import type { Answers } from '@shared/types';
 
 // 12:00 UTC on 16 October 2026: 13:00 in London, the same date.
 beforeEach(() => {

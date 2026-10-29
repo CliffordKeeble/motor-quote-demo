@@ -4,6 +4,7 @@ export type Errors = Partial<Record<keyof QuoteRequest, string>>;
 
 // The browser's checks are for the person. The server checks every one of them again, with
 // these same messages, and is the one that decides (api/Fenmoor.Api QuoteValidator).
+// Both front ends, web/react and web/angular, import this one file, so they cannot drift apart.
 
 const POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 

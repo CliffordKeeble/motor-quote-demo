@@ -5,9 +5,9 @@ import { DriverStep } from './steps/DriverStep';
 import { CoverStep } from './steps/CoverStep';
 import { QuoteResult } from './steps/QuoteResult';
 import { getQuote, getVehicles } from './api/quoteApi';
-import { emptyAnswers, exampleAnswers, stepOf, toRequest, validateStep, type Errors } from './validation';
-import { vehicleName } from './vehicleName';
-import type { Answers, Quote, Vehicle } from './types';
+import { emptyAnswers, exampleAnswers, stepOf, toRequest, validateStep, type Errors } from '@shared/validation';
+import { vehicleName } from '@shared/vehicleName';
+import type { Answers, Quote, Vehicle } from '@shared/types';
 
 const headings = ['Tell us about your car', 'Tell us about you', 'Choose your cover', 'Your quote'];
 const coverNames: Record<string, string> = {

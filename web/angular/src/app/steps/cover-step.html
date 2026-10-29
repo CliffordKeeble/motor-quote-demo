@@ -1,0 +1,53 @@
+<app-choice
+  name="cover"
+  legend="How much cover do you want?"
+  [error]="errors().cover"
+  [value]="answers().cover"
+  (picked)="put('cover', $event)"
+  [options]="[
+    { value: 'comprehensive', label: 'Comprehensive', hint: 'Your car and other people’s, including accidents that were your fault' },
+    { value: 'tpft', label: 'Third party, fire and theft', hint: 'Other people’s cars and property, and your car if stolen or burnt out' },
+    { value: 'tpo', label: 'Third party only', hint: 'The legal minimum: other people’s cars and property' },
+  ]"
+/>
+<p class="aside">
+  Third party only is often dearer than comprehensive. Insurers see more claims from the drivers who choose it.
+</p>
+
+<app-choice
+  name="voluntaryExcess"
+  legend="Voluntary excess"
+  hint="What you agree to pay towards a claim, on top of the compulsory excess. More excess, lower price."
+  [error]="errors().voluntaryExcess"
+  [value]="answers().voluntaryExcess"
+  (picked)="put('voluntaryExcess', $event)"
+  [options]="[
+    { value: '0', label: '£0' },
+    { value: '100', label: '£100' },
+    { value: '250', label: '£250' },
+    { value: '500', label: '£500' },
+  ]"
+/>
+
+<app-field for="startDate" label="When should cover start?" hint="Any day from today up to 30 days ahead" [error]="errors().startDate">
+  <input
+    id="startDate"
+    type="date"
+    [value]="answers().startDate"
+    (input)="typed('startDate', $event)"
+    [attr.aria-invalid]="!!errors().startDate"
+    [attr.aria-describedby]="describe('startDate', true, errors().startDate)"
+  />
+</app-field>
+
+<fieldset class="field">
+  <legend>Extra cover</legend>
+  <label class="check">
+    <input type="checkbox" [checked]="answers().breakdown === 'true'" (change)="ticked('breakdown', $event)" />
+    <span>Breakdown cover, roadside and recovery, £45 a year</span>
+  </label>
+  <label class="check">
+    <input type="checkbox" [checked]="answers().legalExpenses === 'true'" (change)="ticked('legalExpenses', $event)" />
+    <span>Legal expenses, to recover costs after an accident that wasn’t your fault, £25 a year</span>
+  </label>
+</fieldset>

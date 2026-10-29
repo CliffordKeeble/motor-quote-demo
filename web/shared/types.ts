@@ -1,6 +1,6 @@
 // The shapes the quote journey passes to the API and gets back are generated from
 // contracts/openapi.yaml into web/shared/api.d.ts. These are only short names for them.
-import type { components } from '@shared/api';
+import type { components } from './api';
 
 type Schemas = components['schemas'];
 

@@ -1,5 +1,5 @@
 // Generates the TypeScript types from contracts/openapi.yaml into web/shared/api.d.ts, the one
-// place the React app imports them from now and the Angular app will import them from in slice 2.
+// place both front ends, web/react and web/angular, import them from.
 //
 //   npm run contract         writes web/shared/api.d.ts
 //   npm run contract:check   writes nothing; exits 1 if the committed file differs from what the

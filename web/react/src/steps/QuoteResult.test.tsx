@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import golden from '../../../../contracts/examples/quote-worked-example.json';
-import type { Quote } from '../types';
+import type { Quote } from '@shared/types';
 import { QuoteResult } from './QuoteResult';
 
 // The golden file is the exact body the C# API returns for the worked example. The C# tests
