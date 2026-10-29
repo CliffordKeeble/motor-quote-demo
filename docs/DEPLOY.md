@@ -80,8 +80,9 @@ az staticwebapp secrets list --name swa-motor-quote-angular --resource-group rg-
 az staticwebapp show --name swa-motor-quote-angular --resource-group rg-motor-quote-demo --query defaultHostname -o tsv
 ```
 
-It goes in `azure-pipelines.yml` as `angularSiteUrl`, with `https://` in front, so the check
-after the Angular deploy knows where to look. Until it is there, that check fails and says so.
+It is `ashy-dune-08048570f.1.azurestaticapps.net` (read 29 October 2026), and it is in
+`azure-pipelines.yml` as `angularSiteUrl`, with `https://` in front, so the check after the
+Angular deploy knows where to look. If that line is ever emptied, the check fails and says so.
 
 Never paste a token into a file or a chat. If one is ever pasted somewhere, rotate it:
 
@@ -121,14 +122,14 @@ python C:\Dev\motor-quote-demo\tools\smoke_live.py https://wonderful-mushroom-05
 ```
 
 The Playwright suite runs against the live sites too, from `web/e2e` (with Node 22; the first
-command fetches Chromium once). Replace `<ANGULAR-HOSTNAME>` with the address from step 5:
+command fetches Chromium once):
 
 ```cmd
 cd C:\Dev\motor-quote-demo\web\e2e
 npm ci
 npx playwright install chromium
 set REACT_URL=https://wonderful-mushroom-05443000f.6.azurestaticapps.net
-set ANGULAR_URL=https://<ANGULAR-HOSTNAME>
+set ANGULAR_URL=https://ashy-dune-08048570f.1.azurestaticapps.net
 npx playwright test
 ```
 

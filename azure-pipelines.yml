@@ -29,8 +29,8 @@ variables:
   buildConfiguration: Release
   # The React app's live address, which the check after the deploy calls.
   siteUrl: https://wonderful-mushroom-05443000f.6.azurestaticapps.net
-  # The Angular app's, the default hostname of swa-motor-quote-angular (docs/DEPLOY.md, step 5).
-  angularSiteUrl: ''
+  # The Angular app's: the default hostname of swa-motor-quote-angular (docs/DEPLOY.md, step 5).
+  angularSiteUrl: https://ashy-dune-08048570f.1.azurestaticapps.net
 
 stages:
   - stage: Build
