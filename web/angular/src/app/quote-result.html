@@ -1,0 +1,52 @@
+<div class="quote">
+  <section class="price-sign" aria-labelledby="price-heading">
+    <h2 id="price-heading">{{ coverFor() }}</h2>
+    <p class="price">{{ money(quote().annual) }} <span class="per">a year</span></p>
+    <p class="monthly">or 12 payments of {{ money(quote().monthly) }}, which includes an 8% charge for paying monthly</p>
+    <p class="ref">Quote reference {{ quote().reference }}, valid until {{ longDate(quote().validUntil) }}</p>
+  </section>
+
+  <section aria-labelledby="working-heading">
+    <h2 id="working-heading">How we worked out your price</h2>
+    <p class="intro">Every price starts from the same figure for your level of cover. Each answer then moves it up or down.</p>
+    <table class="working">
+      <thead>
+        <tr>
+          <th scope="col">What we looked at</th>
+          <th scope="col">Your answer</th>
+          <th scope="col" class="num">Effect</th>
+          <th scope="col" class="num">Price so far</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of quote().lines; track line.label) {
+          <tr [class]="'line-' + line.kind">
+            <th scope="row">{{ line.label }}</th>
+            <td>{{ line.detail }}</td>
+            <td [class]="effectClass(line)">{{ change(line) }}</td>
+            <td class="num total">{{ money(line.runningTotal) }}<span class="bar" aria-hidden="true" [style.width.%]="(line.runningTotal / peak()) * 100"></span></td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row" colspan="3">Total for the year</th>
+          <td class="num">{{ money(quote().annual) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <section aria-labelledby="excess-heading" class="excess">
+    <h2 id="excess-heading">If you claim</h2>
+    <p>
+      You pay the first {{ money(quote().compulsoryExcess + quote().voluntaryExcess) }} of any claim: a compulsory
+      {{ money(quote().compulsoryExcess) }} and the voluntary {{ money(quote().voluntaryExcess) }} you chose.
+    </p>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="secondary" (click)="changeAnswers.emit()">Change your answers</button>
+    <button type="button" class="link" (click)="restart.emit()">Start a new quote</button>
+  </div>
+</div>

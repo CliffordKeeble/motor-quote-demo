@@ -1,0 +1,101 @@
+<header class="site-header">
+  <div class="wrap">
+    <p class="brand">Fenmoor Motor</p>
+    <p class="disclaimer">A fictional insurer. Prices are illustrative and nothing is sold.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <app-stepper [current]="step()" />
+
+  <div [class]="step() === 3 ? 'layout wide' : 'layout'">
+    <div class="main-col">
+      <h1 #heading tabindex="-1">{{ headings[step()] }}</h1>
+
+      @if (step() === 0) {
+        <button type="button" class="link example" (click)="fillExample()">Fill in example answers</button>
+      }
+
+      @if (errorCount() > 0) {
+        <div #summary class="error-summary" role="alert" tabindex="-1">
+          {{ errorCount() === 1 ? 'One answer needs' : errorCount() + ' answers need' }} changing before you can continue.
+        </div>
+      }
+
+      @if (failed()) {
+        <div #failure class="error-summary" role="alert" tabindex="-1">
+          We couldn’t work out your price just now. Your answers are all still here. Please try again.
+        </div>
+      }
+
+      @if (step() < 3) {
+        <form novalidate (submit)="submit($event)">
+          @switch (step()) {
+            @case (0) {
+              <app-car-step
+                [answers]="answers()"
+                [errors]="errors()"
+                [vehicles]="vehicles()"
+                [vehiclesStatus]="vehiclesStatus()"
+                (changed)="set($event)"
+                (retryVehicles)="loadVehicles()"
+              />
+            }
+            @case (1) {
+              <app-driver-step [answers]="answers()" [errors]="errors()" (changed)="set($event)" />
+            }
+            @case (2) {
+              <app-cover-step [answers]="answers()" [errors]="errors()" (changed)="set($event)" />
+            }
+          }
+
+          <div class="actions">
+            @if (step() > 0) {
+              <button type="button" class="secondary" (click)="back()">Back</button>
+            }
+            <button type="submit" class="primary" [disabled]="busy()">
+              {{ step() < 2 ? 'Continue' : busy() ? 'Working out your price…' : 'Get my quote' }}
+            </button>
+          </div>
+
+          @if (busy()) {
+            <p class="waiting" role="status">Working out your price. The first quote after a quiet spell can take a few seconds.</p>
+          }
+        </form>
+      }
+
+      @if (step() === 3 && quote(); as quote) {
+        @if (vehicle()) {
+          <app-quote-result [quote]="quote" [coverFor]="coverFor()" (changeAnswers)="step.set(0)" (restart)="restart()" />
+        }
+      }
+    </div>
+
+    @if (step() < 3) {
+      <aside class="summary" aria-label="Your answers so far">
+        <h2>Your answers</h2>
+        <dl>
+          <dt>Car</dt>
+          <dd>{{ vehicle() ? vehicleName(vehicle()!) : 'Not chosen yet' }}</dd>
+          @if (vehicle(); as vehicle) {
+            <dt>Insurance group</dt>
+            <dd>{{ vehicle.group }} of 50</dd>
+          }
+          @if (step() > 0) {
+            <dt>Postcode</dt>
+            <dd>{{ answers().postcode.toUpperCase() || 'Not given yet' }}</dd>
+          }
+        </dl>
+      </aside>
+    }
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>
+      A demonstration of a quote journey in Angular and TypeScript. Fenmoor Motor does not exist. Rating factors,
+      insurance groups and area bands are invented; Insurance Premium Tax is the real standard rate of 12%.
+    </p>
+  </div>
+</footer>

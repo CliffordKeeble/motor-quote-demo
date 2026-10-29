@@ -1,0 +1,23 @@
+/* The look is web/shared/styles.css, the same stylesheet the React app uses, after the typeface. */
+@import '@fontsource/atkinson-hyperlegible-next/400.css';
+@import '@fontsource/atkinson-hyperlegible-next/700.css';
+@import '../../shared/styles.css';
+
+/* The one rule only Angular needs. A component's host element (app-car-step, app-field and the
+   rest) is not a box, so the form's grid spaces the fields inside it exactly as it spaces the
+   React app's. It is here rather than in each component's styles because a component's styles
+   arrive as an inline <style>, which the Content-Security-Policy (style-src 'self') refuses. */
+app-stepper,
+app-car-step,
+app-driver-step,
+app-cover-step,
+app-field,
+app-choice,
+app-quote-result {
+  display: contents;
+}
+
+/* The React app's root is a <div>; this one's is <app-root>, which would otherwise be inline. */
+app-root {
+  display: block;
+}

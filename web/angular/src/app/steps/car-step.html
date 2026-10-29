@@ -1,0 +1,78 @@
+<app-field
+  for="vehicleId"
+  label="Which car do you want to insure?"
+  [hint]="vehiclesStatus() === 'loading' ? 'Loading the sample cars…' : 'This demo has seven sample cars.'"
+  [error]="errors().vehicleId"
+>
+  <select
+    id="vehicleId"
+    (change)="typed('vehicleId', $event)"
+    [attr.aria-invalid]="!!errors().vehicleId"
+    [attr.aria-describedby]="describe('vehicleId', true, errors().vehicleId)"
+  >
+    <option value="" [selected]="!answers().vehicleId">Choose a car</option>
+    @for (v of vehicles(); track v.id) {
+      <option [value]="v.id" [selected]="answers().vehicleId === v.id">{{ vehicleName(v) }}, {{ v.fuel.toLowerCase() }}</option>
+    }
+  </select>
+  @if (vehiclesStatus() === 'failed') {
+    <p class="error" role="alert">
+      We couldn’t load the sample cars.
+      <button type="button" class="link" (click)="retryVehicles.emit()">Try again</button>
+    </p>
+  }
+</app-field>
+
+<app-field for="carValue" label="What is the car worth today?" hint="In whole pounds" [error]="errors().carValue">
+  <div class="prefixed">
+    <span aria-hidden="true">£</span>
+    <input
+      id="carValue"
+      inputmode="numeric"
+      [value]="answers().carValue"
+      (input)="typed('carValue', $event)"
+      [attr.aria-invalid]="!!errors().carValue"
+      [attr.aria-describedby]="describe('carValue', true, errors().carValue)"
+    />
+  </div>
+</app-field>
+
+<app-choice
+  name="overnight"
+  legend="Where is it kept overnight?"
+  [error]="errors().overnight"
+  [value]="answers().overnight"
+  (picked)="put('overnight', $event)"
+  [options]="[
+    { value: 'garage', label: 'Garage' },
+    { value: 'driveway', label: 'Driveway' },
+    { value: 'street', label: 'On the street' },
+  ]"
+/>
+
+<app-choice
+  name="mileage"
+  legend="How many miles a year?"
+  [error]="errors().mileage"
+  [value]="answers().mileage"
+  (picked)="put('mileage', $event)"
+  [options]="[
+    { value: 'under5k', label: 'Under 5,000' },
+    { value: '5to10k', label: '5,000 to 10,000' },
+    { value: '10to15k', label: '10,000 to 15,000' },
+    { value: 'over15k', label: 'Over 15,000' },
+  ]"
+/>
+
+<app-choice
+  name="use"
+  legend="What is it used for?"
+  [error]="errors().use"
+  [value]="answers().use"
+  (picked)="put('use', $event)"
+  [options]="[
+    { value: 'social', label: 'Social only', hint: 'Shopping, visiting, days out' },
+    { value: 'commuting', label: 'Social and commuting', hint: 'Including driving to work' },
+    { value: 'business', label: 'Business', hint: 'Driving as part of your job' },
+  ]"
+/>
