@@ -1,6 +1,7 @@
 import { Component, type ElementRef, afterRenderEffect, computed, inject, signal, untracked, viewChild } from '@angular/core';
 import type { Answers, Quote, Vehicle } from '@shared/types';
 import { emptyAnswers, exampleAnswers, stepOf, toRequest, validateStep, type Errors } from '@shared/validation';
+import { otherSite, readSwitch, switchFragment } from '@shared/switch';
 import { vehicleName } from '@shared/vehicleName';
 import type { AnswerChange } from './field';
 import { QuoteApi } from './quote-api';
@@ -63,8 +64,19 @@ export class App {
     return vehicle ? `${coverNames[this.answers().cover]} for your ${vehicle.make} ${vehicle.model}` : '';
   });
   protected readonly vehicleName = vehicleName;
+  // The same journey in the React app, with the answers so far.
+  protected readonly switchHref = computed(() => `${otherSite('angular', location)}/${switchFragment(this.step(), this.answers())}`);
 
   constructor() {
+    // Answers carried from the React page by its "Switch to Angular" link, if that is how we came.
+    // Then take them out of the address bar, and so out of this history entry.
+    const carried = readSwitch(location.hash);
+    if (carried) {
+      this.step.set(carried.step);
+      this.answers.set(carried.answers);
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+
     void this.loadVehicles();
 
     // Move focus to the new heading on each step, so a screen reader announces it.

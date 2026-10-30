@@ -7,6 +7,7 @@ import { QuoteResult } from './steps/QuoteResult';
 import { getQuote, getVehicles } from './api/quoteApi';
 import { emptyAnswers, exampleAnswers, stepOf, toRequest, validateStep, type Errors } from '@shared/validation';
 import { vehicleName } from '@shared/vehicleName';
+import { otherSite, readSwitch, switchFragment } from '@shared/switch';
 import type { Answers, Quote, Vehicle } from '@shared/types';
 
 const headings = ['Tell us about your car', 'Tell us about you', 'Choose your cover', 'Your quote'];
@@ -30,8 +31,10 @@ const onOtherSteps = (errors: Errors, step: number): Errors =>
   Object.fromEntries(Object.entries(errors).filter(([field, message]) => message && stepOf[field as keyof Answers] !== step));
 
 export default function App() {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answers>(emptyAnswers);
+  // Answers carried from the Angular page by its "Switch to React" link, if that is how we came.
+  const [carried] = useState(() => readSwitch(window.location.hash));
+  const [step, setStep] = useState(carried?.step ?? 0);
+  const [answers, setAnswers] = useState<Answers>(carried?.answers ?? emptyAnswers);
   const [errors, setErrors] = useState<Errors>({});
   const [quote, setQuote] = useState<Quote | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,6 +56,11 @@ export default function App() {
   useEffect(() => {
     void loadVehicles();
   }, [loadVehicles]);
+
+  // Take carried answers out of the address bar, and so out of this history entry.
+  useEffect(() => {
+    if (carried) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }, [carried]);
 
   // Move focus to the new heading on each step, so a screen reader announces it.
   useEffect(() => {
@@ -130,6 +138,9 @@ export default function App() {
         <div className="wrap">
           <p className="brand">Fenmoor Motor</p>
           <p className="disclaimer">A fictional insurer. Prices are illustrative and nothing is sold.</p>
+          <a className="switch" href={`${otherSite('react', window.location)}/${switchFragment(step, answers)}`}>
+            Switch to Angular
+          </a>
         </div>
       </header>
 

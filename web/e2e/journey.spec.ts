@@ -113,3 +113,30 @@ test('keeps every answer on the way back', async ({ page }) => {
   await expect(page.getByRole('radio', { name: 'Driveway' })).toBeChecked();
   await expect(page.getByRole('complementary', { name: 'Your answers so far' })).toContainText('17 of 50');
 });
+
+test('switches to the other front end part way, keeps every answer, and finishes at £227.19', async ({ page }) => {
+  // Each page links to the other: on this machine the other local server, deployed the other live
+  // site (web/shared/switch.ts). Against deployed sites, both must be in the run.
+  const isLive = Boolean(process.env.REACT_URL || process.env.ANGULAR_URL);
+  test.skip(isLive && !(process.env.REACT_URL && process.env.ANGULAR_URL), 'only one front end is in this run');
+  const here = framework();
+  const there = here === 'React' ? 'Angular' : 'React';
+
+  await open(page);
+  await page.getByRole('button', { name: 'Fill in example answers' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Tell us about you' })).toBeVisible();
+
+  await page.getByRole('link', { name: `Switch to ${there}` }).click();
+
+  await expect(page.getByRole('contentinfo')).toContainText(`A demonstration of a quote journey in ${there} and TypeScript.`);
+  await expect(page.getByRole('heading', { level: 1, name: 'Tell us about you' })).toBeVisible();
+  await expect(page.getByLabel('Where is the car kept?')).toHaveValue('PE38 9AB');
+  await expect(page.getByLabel('Your date of birth')).toHaveValue('1984-03-12');
+  await expect.poll(() => new URL(page.url()).hash, { message: 'the answers are out of the address bar' }).toBe('');
+  await expect(page.getByRole('link', { name: `Switch to ${here}` })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Get my quote' }).click();
+  await expect(page.locator('.price')).toHaveText('£227.19 a year');
+});

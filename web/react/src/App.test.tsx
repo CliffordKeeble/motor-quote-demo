@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import golden from '../../../contracts/examples/quote-worked-example.json';
 import App from './App';
+import { liveSites, switchFragment } from '@shared/switch';
 import type { Vehicle } from '@shared/types';
+import { exampleAnswers } from '@shared/validation';
 
 const vehicles: Vehicle[] = [
   { id: 'ford-fiesta-2019', make: 'Ford', model: 'Fiesta 1.0 EcoBoost Titanium', year: 2019, fuel: 'Petrol', group: 12 },
@@ -50,6 +52,7 @@ async function getQuote(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  window.history.replaceState(null, '', '/');
 });
 
 describe('the journey against the API', () => {
@@ -233,5 +236,34 @@ describe('after a Continue that cannot go on', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('We couldn’t work out your price just now');
     expect(alert).toHaveFocus();
+  });
+});
+
+// The link to the same journey in the Angular app, and the way back from it (web/shared/switch.ts).
+describe('switching between the React and the Angular page', () => {
+  it('links to the Angular page with the step and the answers so far', async () => {
+    stubApi(() => json(golden));
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByRole('option', { name: /Golf/ });
+    await user.click(screen.getByRole('button', { name: 'Fill in example answers' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    const link = screen.getByRole('link', { name: 'Switch to Angular' });
+    const href = link.getAttribute('href')!;
+    expect(href.startsWith(`${liveSites.angular}/#step=1&`)).toBe(true);
+    expect(href).toContain('postcode=PE38+9AB');
+  });
+
+  it('opens on the step the Angular page carried, with its answers, and clears them from the address', async () => {
+    stubApi(() => json(golden));
+    window.history.replaceState(null, '', `/${switchFragment(1, exampleAnswers())}`);
+
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Tell us about you' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Where is the car kept?')).toHaveValue('PE38 9AB');
+    expect(window.location.hash).toBe('');
+    expect(await screen.findByText('Volkswagen Golf 1.5 TSI Life (2021)')).toBeInTheDocument();
   });
 });

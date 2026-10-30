@@ -82,7 +82,9 @@ az staticwebapp show --name swa-motor-quote-angular --resource-group rg-motor-qu
 
 It is `ashy-dune-08048570f.1.azurestaticapps.net` (read 29 October 2026), and it is in
 `azure-pipelines.yml` as `angularSiteUrl`, with `https://` in front, so the check after the
-Angular deploy knows where to look. If that line is ever emptied, the check fails and says so.
+Angular deploy knows where to look. If that line is ever emptied, the check fails and says so. The two
+addresses are also in `web/shared/switch.ts`, where each page's "Switch to" link finds the other:
+if either address ever changes, change both files.
 
 Never paste a token into a file or a chat. If one is ever pasted somewhere, rotate it:
 

@@ -101,6 +101,14 @@ h2 {
   opacity: 0.9;
 }
 
+/* The link to the same journey in the other front end, at the header's far end. */
+.switch {
+  margin-left: auto;
+  color: var(--on-route);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
 .site-footer {
   margin-top: 4rem;
   border-top: 1px solid var(--line);
