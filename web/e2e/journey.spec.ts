@@ -104,7 +104,7 @@ test('keeps every answer on the way back', async ({ page }) => {
   await fillInTheExample(page);
 
   await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page.getByLabel('Where is the car kept?')).toHaveValue('PE38 9AB');
+  await expect(page.getByLabel('Postcode where the car is kept')).toHaveValue('PE38 9AB');
   await expect(page.getByLabel('Your date of birth')).toHaveValue('1984-03-12');
 
   await page.getByRole('button', { name: 'Back' }).click();
@@ -131,7 +131,7 @@ test('switches to the other front end part way, keeps every answer, and finishes
 
   await expect(page.getByRole('contentinfo')).toContainText(`A demonstration of a quote journey in ${there} and TypeScript.`);
   await expect(page.getByRole('heading', { level: 1, name: 'Tell us about you' })).toBeVisible();
-  await expect(page.getByLabel('Where is the car kept?')).toHaveValue('PE38 9AB');
+  await expect(page.getByLabel('Postcode where the car is kept')).toHaveValue('PE38 9AB');
   await expect(page.getByLabel('Your date of birth')).toHaveValue('1984-03-12');
   await expect.poll(() => new URL(page.url()).hash, { message: 'the answers are out of the address bar' }).toBe('');
   await expect(page.getByRole('link', { name: `Switch to ${here}` })).toBeVisible();

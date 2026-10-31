@@ -19,7 +19,8 @@ Playwright suite runs the same journey through both.
 Each page links to the other ("Switch to Angular", "Switch to React") at any step, and the answers
 go with it. They travel after the `#` in the address, which a browser never sends to a server, and
 the page that opens takes them out of the address bar as it reads them (`web/shared/switch.ts`,
-which also holds the two live addresses).
+which also holds the two live addresses). Whether the browser's own history list still holds the
+address as it was first opened has not been checked.
 
 ## The stack, as built
 

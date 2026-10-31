@@ -1,4 +1,5 @@
 import type { Answers, QuoteRequest } from './types';
+import { postcodeArea, ukPostcodeAreas } from './postcodeAreas';
 
 export type Errors = Partial<Record<keyof QuoteRequest, string>>;
 
@@ -26,7 +27,54 @@ export function ageOn(dateOfBirth: string, on: string): number {
   return year - birthYear - (beforeBirthday ? 1 : 0);
 }
 
+// The first day on which ageOn says `age`: the birthday, except for a 29 February birth in a
+// common year, where it is 1 March (on 28 February ageOn still says the age before). The server's
+// RatingEngine.FirstDayAged is defined the same way.
+export function firstDayAged(dateOfBirth: string, age: number): string {
+  const [birthYear, birthMonth] = dateOfBirth.split('-').map(Number);
+  let day = `${String(birthYear + age).padStart(4, '0')}-${String(birthMonth).padStart(2, '0')}-01`;
+  while (ageOn(dateOfBirth, day) < age) day = addDays(day, 1);
+  return day;
+}
+
+// A calendar date in en-GB long form, like 5 November 2026. Read in UTC, as a plain date.
+export const longDate = (date: string) =>
+  new Date(`${date}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+// A real calendar date written yyyy-mm-dd, as a date input gives it. Anything else (an address
+// edited by hand can carry anything) is treated as no answer, as the server treats it.
+function isDate(s: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [year, month, day] = s.split('-').map(Number);
+  const d = new Date(0);
+  d.setUTCFullYear(year, month - 1, day);
+  return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day;
+}
+
+// The values each choice can take: the contract's own (contracts/openapi.yaml, through api.d.ts,
+// so a value added there or taken away fails the type check here). A value the form could not
+// produce is treated as no answer, as the server treats it.
+const choices: { [K in 'overnight' | 'mileage' | 'use' | 'cover' | 'claimsLast5Years' | 'voluntaryExcess']: Record<QuoteRequest[K], true> } = {
+  overnight: { garage: true, driveway: true, street: true },
+  mileage: { under5k: true, '5to10k': true, '10to15k': true, over15k: true },
+  use: { social: true, commuting: true, business: true },
+  cover: { comprehensive: true, tpft: true, tpo: true },
+  claimsLast5Years: { 0: true, 1: true, 2: true },
+  voluntaryExcess: { 0: true, 100: true, 250: true, 500: true },
+};
+const chosen = (field: keyof typeof choices, a: Answers) => Object.hasOwn(choices[field], a[field]);
+
 const whole = (s: string) => (/^\d+$/.test(s.trim()) ? Number(s) : NaN);
+
+// The date of birth's own checks. Judged on the last start date allowed, as the price is judged on
+// the start date: someone who is 16 today and 17 within 30 days can start cover on or after the
+// birthday (step 3 holds them to it).
+function dateOfBirthError(dateOfBirth: string): string | undefined {
+  if (!isDate(dateOfBirth)) return 'Enter your date of birth';
+  if (ageOn(dateOfBirth, addDays(today(), 30)) < 17) return 'You need to be 17 within the next 30 days to get a quote';
+  if (ageOn(dateOfBirth, today()) > 99) return 'Check the year of your date of birth';
+  return undefined;
+}
 
 export function validateStep(step: number, a: Answers): Errors {
   const e: Errors = {};
@@ -36,39 +84,48 @@ export function validateStep(step: number, a: Answers): Errors {
     const value = whole(a.carValue.replace(/[£,]/g, ''));
     if (Number.isNaN(value)) e.carValue = 'Enter the car’s value in whole pounds, like 12000';
     else if (value < 500 || value > 250000) e.carValue = 'Enter a value between £500 and £250,000';
-    if (!a.overnight) e.overnight = 'Choose where the car is kept overnight';
-    if (!a.mileage) e.mileage = 'Choose your annual mileage';
-    if (!a.use) e.use = 'Choose what the car is used for';
+    if (!chosen('overnight', a)) e.overnight = 'Choose where the car is kept overnight';
+    if (!chosen('mileage', a)) e.mileage = 'Choose your annual mileage';
+    if (!chosen('use', a)) e.use = 'Choose what the car is used for';
   }
 
   if (step === 1) {
-    const age = a.dateOfBirth ? ageOn(a.dateOfBirth, today()) : NaN;
-    if (!a.dateOfBirth) e.dateOfBirth = 'Enter your date of birth';
-    else if (age < 17) e.dateOfBirth = 'You need to be 17 or over to get a quote';
-    else if (age > 99) e.dateOfBirth = 'Check the year of your date of birth';
+    const dateOfBirth = dateOfBirthError(a.dateOfBirth);
+    if (dateOfBirth) e.dateOfBirth = dateOfBirth;
 
+    // The licence is judged only on a date of birth that passed: an age that was refused says
+    // nothing about how long a licence can have been held.
     const licence = whole(a.licenceYears);
     if (Number.isNaN(licence)) e.licenceYears = 'Enter the number of whole years, like 5';
-    else if (!Number.isNaN(age) && licence > age - 17) {
+    else if (!dateOfBirth) {
+      const age = ageOn(a.dateOfBirth, today());
       const most = Math.max(age - 17, 0);
-      e.licenceYears = `At ${age} you can have held a licence for ${most} ${most === 1 ? 'year' : 'years'} at most`;
+      if (licence > most) e.licenceYears = `At ${age} you can have held a licence for ${most} ${most === 1 ? 'year' : 'years'} at most`;
     }
 
     if (!POSTCODE.test(a.postcode.trim())) e.postcode = 'Enter a full UK postcode, like PE38 9AB';
+    else if (!ukPostcodeAreas.has(postcodeArea(a.postcode)))
+      e.postcode = 'We don’t recognise that postcode area. Enter a full UK postcode, like PE38 9AB';
 
     const ncd = whole(a.noClaimsYears);
     if (Number.isNaN(ncd)) e.noClaimsYears = 'Enter the number of whole years, like 4';
     else if (!Number.isNaN(licence) && ncd > licence) e.noClaimsYears = 'No-claims years can’t be more than the years you’ve held a licence';
 
-    if (a.claimsLast5Years === '') e.claimsLast5Years = 'Choose how many claims you’ve made';
+    if (!chosen('claimsLast5Years', a)) e.claimsLast5Years = 'Choose how many claims you’ve made';
   }
 
   if (step === 2) {
-    if (!a.cover) e.cover = 'Choose a level of cover';
-    if (a.voluntaryExcess === '') e.voluntaryExcess = 'Choose a voluntary excess';
-    if (!a.startDate) e.startDate = 'Enter the date you want cover to start';
+    if (!chosen('cover', a)) e.cover = 'Choose a level of cover';
+    if (!chosen('voluntaryExcess', a)) e.voluntaryExcess = 'Choose a voluntary excess';
+    if (!isDate(a.startDate)) e.startDate = 'Enter the date you want cover to start';
     else if (a.startDate < today() || a.startDate > addDays(today(), 30))
       e.startDate = 'Choose a start date from today up to 30 days ahead';
+    else if (!dateOfBirthError(a.dateOfBirth)) {
+      // Cover can start on the 17th birthday at the earliest. Only on a valid date of birth, which
+      // step 2 has already checked; a refused one is that step's message, not this one.
+      const seventeenth = firstDayAged(a.dateOfBirth, 17);
+      if (a.startDate < seventeenth) e.startDate = `Choose a start date on or after your 17th birthday, ${longDate(seventeenth)}`;
+    }
   }
 
   return e;

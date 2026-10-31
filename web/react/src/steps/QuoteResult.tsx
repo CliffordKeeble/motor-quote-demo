@@ -16,6 +16,13 @@ function longDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
 
+// What a claim costs the person first. With no voluntary excess chosen it says so, rather than
+// "the voluntary £0.00 you chose".
+function ifYouClaim(quote: Quote) {
+  const voluntary = quote.voluntaryExcess > 0 ? `the voluntary ${money(quote.voluntaryExcess)} you chose` : 'no voluntary excess';
+  return `You pay the first ${money(quote.compulsoryExcess + quote.voluntaryExcess)} of any claim: a compulsory ${money(quote.compulsoryExcess)} and ${voluntary}.`;
+}
+
 interface Props {
   quote: Quote;
   coverFor: string; // e.g. 'Comprehensive cover for your Volkswagen Golf 1.5 TSI Life'
@@ -83,10 +90,7 @@ export function QuoteResult({ quote, coverFor, onChange, onRestart }: Props) {
 
       <section aria-labelledby="excess-heading" className="excess">
         <h2 id="excess-heading">If you claim</h2>
-        <p>
-          You pay the first {money(quote.compulsoryExcess + quote.voluntaryExcess)} of any claim: a compulsory{' '}
-          {money(quote.compulsoryExcess)} and the voluntary {money(quote.voluntaryExcess)} you chose.
-        </p>
+        <p>{ifYouClaim(quote)}</p>
       </section>
 
       <div className="actions">

@@ -117,6 +117,10 @@ stages:
             displayName: npm ci (Playwright)
             workingDirectory: web/e2e
 
+          - script: npm audit --audit-level=high
+            displayName: npm audit (Playwright)
+            workingDirectory: web/e2e
+
           - script: npx playwright install --with-deps chromium
             displayName: Chromium for Playwright
             workingDirectory: web/e2e

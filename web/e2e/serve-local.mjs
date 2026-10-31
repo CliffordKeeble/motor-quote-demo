@@ -47,7 +47,15 @@ createServer(async (request, response) => {
   if (url.pathname === '/api/quote' && request.method === 'POST') {
     let body = '';
     for await (const chunk of request) body += chunk;
-    const answers = JSON.parse(body);
+    let answers;
+    try {
+      answers = JSON.parse(body);
+    } catch {
+      // Not JSON at all: refused, as the API refuses it, rather than taking the stub down.
+      const refusal = { status: 400, errors: { body: ['The request body is not JSON'] } };
+      return send(400, 'application/problem+json', JSON.stringify(refusal));
+    }
+    if (answers === null || typeof answers !== 'object') answers = {};
     if (Object.entries(workedExample).every(([field, value]) => answers[field] === value)) {
       return send(200, types['.json'], golden);
     }

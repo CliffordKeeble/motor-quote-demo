@@ -14,8 +14,8 @@ import { Stepper } from './stepper';
 const headings = ['Tell us about your car', 'Tell us about you', 'Choose your cover', 'Your quote'];
 const coverNames: Record<string, string> = {
   comprehensive: 'Comprehensive cover',
-  tpft: 'Third party, fire and theft',
-  tpo: 'Third party only',
+  tpft: 'Third party, fire and theft cover',
+  tpo: 'Third party only cover',
 };
 
 // The server's refusal (a message for each answer it would not take) as form errors, for the
@@ -23,7 +23,7 @@ const coverNames: Record<string, string> = {
 function refusedErrors(refused: Record<string, string[]>): Errors {
   const errors: Errors = {};
   for (const [field, messages] of Object.entries(refused)) {
-    if (field in stepOf && messages.length > 0) errors[field as keyof Answers] = messages[0];
+    if (Object.hasOwn(stepOf, field) && messages.length > 0) errors[field as keyof Answers] = messages[0];
   }
   return errors;
 }
