@@ -50,7 +50,7 @@ public class RefusalTests
 
     // Step 2, about you. Today is 16 October 2026 and the driver is 42.
     [Theory]
-    [InlineData("dateOfBirth", "\"2012-01-01\"", "dateOfBirth,licenceYears", "You need to be 17 or over to get a quote")]
+    [InlineData("dateOfBirth", "\"2012-01-01\"", "dateOfBirth", "You need to be 17 within the next 30 days to get a quote")]
     [InlineData("dateOfBirth", "\"1926-10-15\"", "dateOfBirth", "Check the year of your date of birth")]
     [InlineData("dateOfBirth", "\"12/03/1984\"", "dateOfBirth", "Enter your date of birth")]
     [InlineData("dateOfBirth", "REMOVE", "dateOfBirth", "Enter your date of birth")]
@@ -61,6 +61,7 @@ public class RefusalTests
     [InlineData("postcode", "\"ZZ\"", "postcode", "Enter a full UK postcode, like PE38 9AB")]
     [InlineData("postcode", "\"PE38\"", "postcode", "Enter a full UK postcode, like PE38 9AB")]
     [InlineData("postcode", "\"\"", "postcode", "Enter a full UK postcode, like PE38 9AB")]
+    [InlineData("postcode", "\"ZZ99 9ZZ\"", "postcode", "We don’t recognise that postcode area. Enter a full UK postcode, like PE38 9AB")]
     [InlineData("postcode", "REMOVE", "postcode", "Enter a full UK postcode, like PE38 9AB")]
     [InlineData("noClaimsYears", "-1", "noClaimsYears", "Enter the number of whole years, like 4")]
     [InlineData("noClaimsYears", "21", "noClaimsYears", "No-claims years can’t be more than the years you’ve held a licence")]

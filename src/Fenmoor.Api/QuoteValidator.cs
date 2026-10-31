@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Fenmoor.Rating;
 
@@ -11,6 +12,8 @@ public static partial class QuoteValidator
 {
     public const int FirstStartDateOffsetDays = 0;
     public const int LastStartDateOffsetDays = 30;
+
+    private static readonly CultureInfo British = CultureInfo.GetCultureInfo("en-GB");
 
     /// <summary>The message for an answer that is missing or is not the kind of value the form sends.</summary>
     public static IReadOnlyDictionary<string, string> UnreadableAnswerMessages { get; } = new Dictionary<string, string>
@@ -80,9 +83,11 @@ public static partial class QuoteValidator
         {
             errors["dateOfBirth"] = messages["dateOfBirth"];
         }
-        else if (years < 17)
+        else if (RatingEngine.AgeOn(request.DateOfBirth!.Value, today.AddDays(LastStartDateOffsetDays)) < 17)
         {
-            errors["dateOfBirth"] = "You need to be 17 or over to get a quote";
+            // Judged on the last start date allowed, the dates the price uses: a 16-year-old who is
+            // 17 within the window can still start cover on or after the birthday.
+            errors["dateOfBirth"] = "You need to be 17 within the next 30 days to get a quote";
         }
         else if (years > 99)
         {
@@ -94,8 +99,9 @@ public static partial class QuoteValidator
         {
             errors["licenceYears"] = messages["licenceYears"];
         }
-        else if (age is { } ageToday && licenceYears > ageToday - 17)
+        else if (!errors.ContainsKey("dateOfBirth") && age is { } ageToday && licenceYears > Math.Max(ageToday - 17, 0))
         {
+            // Only on a valid date of birth: a licence cannot be judged against an age that was refused.
             var most = Math.Max(ageToday - 17, 0);
             errors["licenceYears"] = $"At {ageToday} you can have held a licence for {most} {(most == 1 ? "year" : "years")} at most";
         }
@@ -103,6 +109,10 @@ public static partial class QuoteValidator
         if (request.Postcode is null || !Postcode().IsMatch(request.Postcode.Trim()))
         {
             errors["postcode"] = messages["postcode"];
+        }
+        else if (!PostcodeAreas.IsUk(RatingEngine.PostcodeArea(request.Postcode)))
+        {
+            errors["postcode"] = "We don’t recognise that postcode area. Enter a full UK postcode, like PE38 9AB";
         }
 
         int? noClaims = request.NoClaimsYears is >= 0 ? request.NoClaimsYears : null;
@@ -138,6 +148,12 @@ public static partial class QuoteValidator
         else if (startDate < today.AddDays(FirstStartDateOffsetDays) || startDate > today.AddDays(LastStartDateOffsetDays))
         {
             errors["startDate"] = "Choose a start date from today up to 30 days ahead";
+        }
+        else if (!errors.ContainsKey("dateOfBirth")
+            && startDate < RatingEngine.FirstDayAged(request.DateOfBirth!.Value, 17))
+        {
+            var seventeenth = RatingEngine.FirstDayAged(request.DateOfBirth.Value, 17);
+            errors["startDate"] = $"Choose a start date on or after your 17th birthday, {seventeenth.ToString("d MMMM yyyy", British)}";
         }
 
         // The add-ons are the only answers that can be missing without being wrong, so they are the

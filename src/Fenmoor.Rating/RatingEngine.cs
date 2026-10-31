@@ -73,11 +73,11 @@ public static class RatingEngine
             sheet.Factor("Car value", Pounds(request.CarValue), ValueFactor(request.CarValue));
         }
 
-        sheet.Factor("Where you live", $"{PostcodeArea(request.Postcode)} postcode area, band {area.Band}", area.Factor);
+        sheet.Factor("Postcode where the car is kept", $"{PostcodeArea(request.Postcode)} postcode area, band {area.Band}", area.Factor);
         sheet.Factor("Where it is kept overnight", OvernightName(request.Overnight), OvernightFactor(request.Overnight));
         sheet.Factor("Annual mileage", MileageName(request.Mileage), MileageFactor(request.Mileage));
         sheet.Factor("What the car is used for", UseName(request.Use), UseFactor(request.Use));
-        sheet.Factor("Claims in the last 5 years", request.ClaimsLast5Years.ToString(British), ClaimsFactor(request.ClaimsLast5Years));
+        sheet.Factor("Claims in the last 5 years", ClaimsName(request.ClaimsLast5Years), ClaimsFactor(request.ClaimsLast5Years));
 
         var discount = NoClaimsDiscountFor(request.NoClaimsYears);
         var percentOff = decimal.ToInt32(discount * 100m);
@@ -114,6 +114,25 @@ public static class RatingEngine
         var beforeBirthday = on.Month < dateOfBirth.Month || (on.Month == dateOfBirth.Month && on.Day < dateOfBirth.Day);
         return beforeBirthday ? age - 1 : age;
     }
+
+    /// <summary>
+    /// The first day on which <see cref="AgeOn"/> says <paramref name="age"/>: the birthday, except
+    /// for a 29 February birth in a common year, where that is 1 March (28 February is still the
+    /// age before).
+    /// </summary>
+    public static DateOnly FirstDayAged(DateOnly dateOfBirth, int age)
+    {
+        var day = dateOfBirth.AddYears(age);
+        while (AgeOn(dateOfBirth, day) < age)
+        {
+            day = day.AddDays(1);
+        }
+
+        return day;
+    }
+
+    /// <summary>The postcode areas the invented band table names, in any band.</summary>
+    public static IReadOnlyCollection<string> BandedAreas { get; } = [.. AreaBands.SelectMany(band => band.Areas)];
 
     /// <summary>The letters at the start of a postcode: <c>PE</c> from <c>pe38 9ab</c>.</summary>
     public static string PostcodeArea(string postcode)
@@ -177,6 +196,11 @@ public static class RatingEngine
     private static AreaBand AreaBandFor(string postcode)
     {
         var area = PostcodeArea(postcode);
+        if (!PostcodeAreas.IsUk(area))
+        {
+            throw new ArgumentException($"'{area}' is not a UK postcode area.", nameof(postcode));
+        }
+
         return AreaBands.FirstOrDefault(band => band.Areas.Contains(area)) ?? MiddleBand;
     }
 
@@ -235,6 +259,14 @@ public static class RatingEngine
         0 => 1.0m,
         1 => 1.25m,
         _ => 1.6m,
+    };
+
+    // The answer's own words, as the question offers them.
+    private static string ClaimsName(int claims) => claims switch
+    {
+        0 => "None",
+        1 => "One",
+        _ => "Two or more",
     };
 
     private static decimal NoClaimsDiscountFor(int years) => NoClaimsDiscount[Math.Min(years, NoClaimsDiscount.Length - 1)];
