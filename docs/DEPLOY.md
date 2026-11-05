@@ -82,15 +82,28 @@ az staticwebapp show --name swa-motor-quote-angular --resource-group rg-motor-qu
 
 It is `ashy-dune-08048570f.1.azurestaticapps.net` (read 29 October 2026), and it is in
 `azure-pipelines.yml` as `angularSiteUrl`, with `https://` in front, so the check after the
-Angular deploy knows where to look. If that line is ever emptied, the check fails and says so. The two
-addresses are also in `web/shared/switch.ts`, where each page's "Switch to" link finds the other:
-if either address ever changes, change both files.
+Angular deploy knows where to look. If that line is ever emptied, the check fails and says so.
+
+If either address ever changes, change it in every place it is written. There are five files:
+
+- `azure-pipelines.yml`: `siteUrl` and `angularSiteUrl`, for the check after each deploy;
+- `web/shared/switch.ts`: `liveSites`, where each page's "Switch to" link finds the other;
+- `README.md`: the **Live:** line;
+- this file: the commands under step 6;
+- `tools/smoke_live.py`: the example in its opening comment.
+
+A test reads all five (`web/react/src/switch.test.ts`) and fails if any address in them is not
+one of `liveSites`, or if the pipeline's two differ from it.
 
 Never paste a token into a file or a chat. If one is ever pasted somewhere, rotate it:
 
 ```powershell
 az staticwebapp secrets reset-api-key --name swa-motor-quote-react --resource-group rg-motor-quote-demo
+az staticwebapp secrets reset-api-key --name swa-motor-quote-angular --resource-group rg-motor-quote-demo
 ```
+
+Run only the line for the token that was pasted. Then set the new token in the pipeline's secret
+variable (`SWA_TOKEN_REACT` for React, `SWA_TOKEN_ANGULAR` for Angular), as above.
 
 ## 6. Run the pipeline
 

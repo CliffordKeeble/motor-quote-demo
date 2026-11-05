@@ -39,10 +39,7 @@
 
   <section aria-labelledby="excess-heading" class="excess">
     <h2 id="excess-heading">If you claim</h2>
-    <p>
-      You pay the first {{ money(quote().compulsoryExcess + quote().voluntaryExcess) }} of any claim: a compulsory
-      {{ money(quote().compulsoryExcess) }} and the voluntary {{ money(quote().voluntaryExcess) }} you chose.
-    </p>
+    <p>{{ ifYouClaim() }}</p>
   </section>
 
   <div class="actions">

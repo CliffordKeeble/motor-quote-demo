@@ -42,7 +42,7 @@
       "runningTotal": 416.00
     },
     {
-      "label": "Where you live",
+      "label": "Postcode where the car is kept",
       "detail": "PE postcode area, band A",
       "kind": "factor",
       "multiplier": 0.85,
@@ -75,7 +75,7 @@
     },
     {
       "label": "Claims in the last 5 years",
-      "detail": "0",
+      "detail": "None",
       "kind": "factor",
       "multiplier": 1.0,
       "amount": 0.00,

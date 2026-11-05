@@ -1,8 +1,52 @@
+/// <reference types="node" />
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { liveSites, otherSite, readSwitch, switchFragment } from '@shared/switch';
 import { emptyAnswers, exampleAnswers } from '@shared/validation';
 
 // web/shared/switch.ts is used by both front ends; its own tests run here, as validation.ts's do.
+
+// The live addresses are written in five files, and docs/DEPLOY.md (step 5) names them. These
+// tests read the repository, so a changed address left behind in one of them goes red.
+const repo = join(import.meta.dirname, '../../..');
+const hostnames = Object.values(liveSites).map((site) => new URL(site).hostname);
+const anyLiveHostname = /[a-z0-9-]+\.\d+\.azurestaticapps\.net/g;
+// Not the repository's own files: what a build, an install or a tool leaves in the tree. Every folder
+// whose name starts with a dot is skipped too (.git, and .claude, where a worktree is a whole copy).
+const skipped = new Set(['node_modules', 'dist', 'bin', 'obj', 'test-results', 'playwright-report']);
+
+function filesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.isDirectory()) return skipped.has(entry.name) || entry.name.startsWith('.') ? [] : filesUnder(join(dir, entry.name));
+    return [join(dir, entry.name)];
+  });
+}
+
+describe('the live addresses', () => {
+  it('are the same in the pipeline as in liveSites', () => {
+    const pipeline = readFileSync(join(repo, 'azure-pipelines.yml'), 'utf8');
+
+    expect(pipeline.match(/^\s*siteUrl:\s*(\S+)\s*$/m)?.[1]).toBe(liveSites.react);
+    expect(pipeline.match(/^\s*angularSiteUrl:\s*(\S+)\s*$/m)?.[1]).toBe(liveSites.angular);
+  });
+
+  it('are written in the five files DEPLOY.md names, and only ever as the two in liveSites', () => {
+    const found = new Map<string, string[]>();
+    for (const file of filesUnder(repo)) {
+      const text = readFileSync(file, 'utf8');
+      const names = text.match(anyLiveHostname);
+      if (names) found.set(relative(repo, file).split(sep).join('/'), names);
+    }
+
+    expect([...found.keys()].sort()).toEqual(
+      ['README.md', 'azure-pipelines.yml', 'docs/DEPLOY.md', 'tools/smoke_live.py', 'web/shared/switch.ts'],
+    );
+    for (const [file, names] of found) {
+      for (const name of names) expect(hostnames, `${name} in ${file}`).toContain(name);
+    }
+  });
+});
 
 describe('the other site', () => {
   it('is the other live Static Web App', () => {

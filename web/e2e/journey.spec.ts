@@ -15,11 +15,11 @@ const workedExample: [string, string | RegExp, string, string][] = [
   ['Driving experience', '20 years with a full licence', 'no change', '£400.00'],
   ['Your car', 'Insurance group 17', '+4%', '£416.00'],
   ['Car value', '£14,500', 'no change', '£416.00'],
-  ['Where you live', 'PE postcode area, band A', '−15%', '£353.60'],
+  ['Postcode where the car is kept', 'PE postcode area, band A', '−15%', '£353.60'],
   ['Where it is kept overnight', 'Driveway', 'no change', '£353.60'],
   ['Annual mileage', '5,000 to 10,000 miles', 'no change', '£353.60'],
   ['What the car is used for', 'Social and commuting', 'no change', '£353.60'],
-  ['Claims in the last 5 years', '0', 'no change', '£353.60'],
+  ['Claims in the last 5 years', 'None','no change', '£353.60'],
   ['No-claims bonus', '6 years, 52% off', '−52%', '£169.73'],
   ['Voluntary excess', '£250', '−7%', '£157.85'],
   ['Breakdown cover', 'Added cover', '+£45.00', '£202.85'],
@@ -104,7 +104,7 @@ test('keeps every answer on the way back', async ({ page }) => {
   await fillInTheExample(page);
 
   await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page.getByLabel('Where is the car kept?')).toHaveValue('PE38 9AB');
+  await expect(page.getByLabel('Postcode where the car is kept')).toHaveValue('PE38 9AB');
   await expect(page.getByLabel('Your date of birth')).toHaveValue('1984-03-12');
 
   await page.getByRole('button', { name: 'Back' }).click();
@@ -131,7 +131,7 @@ test('switches to the other front end part way, keeps every answer, and finishes
 
   await expect(page.getByRole('contentinfo')).toContainText(`A demonstration of a quote journey in ${there} and TypeScript.`);
   await expect(page.getByRole('heading', { level: 1, name: 'Tell us about you' })).toBeVisible();
-  await expect(page.getByLabel('Where is the car kept?')).toHaveValue('PE38 9AB');
+  await expect(page.getByLabel('Postcode where the car is kept')).toHaveValue('PE38 9AB');
   await expect(page.getByLabel('Your date of birth')).toHaveValue('1984-03-12');
   await expect.poll(() => new URL(page.url()).hash, { message: 'the answers are out of the address bar' }).toBe('');
   await expect(page.getByRole('link', { name: `Switch to ${here}` })).toBeVisible();

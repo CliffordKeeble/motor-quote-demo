@@ -82,6 +82,20 @@ describe('the journey against the API', () => {
     });
   });
 
+  it('names the level of cover in the quote’s heading, with the word cover', async () => {
+    stubApi(() => json(golden));
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByRole('option', { name: /Golf/ });
+    await user.click(screen.getByRole('button', { name: 'Fill in example answers' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('radio', { name: /^Third party only/ }));
+    await user.click(screen.getByRole('button', { name: 'Get my quote' }));
+
+    expect(await screen.findByRole('heading', { name: 'Third party only cover for your Volkswagen Golf 1.5 TSI Life' })).toBeInTheDocument();
+  });
+
   it('says it is working out the price while it waits', async () => {
     let answer: (response: Response) => void = () => {};
     stubApi(() => new Promise<Response>((resolve) => (answer = resolve)));
@@ -105,7 +119,7 @@ describe('when the server refuses an answer the browser let through (400)', () =
 
     expect(await screen.findByRole('heading', { name: 'Tell us about you' })).toBeInTheDocument();
     expect(screen.getByText('The server did not like this postcode')).toBeInTheDocument();
-    expect(screen.getByLabelText('Where is the car kept?')).toHaveAccessibleDescription(/The server did not like this postcode/);
+    expect(screen.getByLabelText('Postcode where the car is kept')).toHaveAccessibleDescription(/The server did not like this postcode/);
     expect(screen.getByRole('alert')).toHaveTextContent('One answer needs changing');
   });
 
@@ -123,13 +137,23 @@ describe('when the server refuses an answer the browser let through (400)', () =
     expect(await screen.findByText('No such postcode')).toBeInTheDocument();
   });
 
+  it('ignores a refused field the form does not ask, even one named like a property every object has', async () => {
+    stubApi(() => problem({ toString: ['Not a question on this form'], postcode: ['No such postcode'] }));
+
+    await getQuote(userEvent.setup());
+
+    expect(await screen.findByRole('heading', { name: 'Tell us about you' })).toBeInTheDocument();
+    expect(screen.getByText('No such postcode')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('One answer needs changing');
+  });
+
   it('clears a message when the person changes that answer', async () => {
     stubApi(() => problem({ postcode: ['The server did not like this postcode'] }));
     const user = userEvent.setup();
     await getQuote(user);
     await screen.findByText('The server did not like this postcode');
 
-    await user.type(screen.getByLabelText('Where is the car kept?'), '2');
+    await user.type(screen.getByLabelText('Postcode where the car is kept'), '2');
 
     expect(screen.queryByText('The server did not like this postcode')).not.toBeInTheDocument();
   });
@@ -153,7 +177,7 @@ describe('when the quote cannot be had', () => {
     expect(screen.getByRole('radio', { name: '£250' })).toBeChecked();
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(screen.getByLabelText('Where is the car kept?')).toHaveValue('PE38 9AB');
+    expect(screen.getByLabelText('Postcode where the car is kept')).toHaveValue('PE38 9AB');
     expect(screen.getByLabelText('Your date of birth')).toHaveValue('1984-03-12');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
@@ -262,7 +286,7 @@ describe('switching between the React and the Angular page', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Tell us about you' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Where is the car kept?')).toHaveValue('PE38 9AB');
+    expect(screen.getByLabelText('Postcode where the car is kept')).toHaveValue('PE38 9AB');
     expect(window.location.hash).toBe('');
     expect(await screen.findByText('Volkswagen Golf 1.5 TSI Life (2021)')).toBeInTheDocument();
   });

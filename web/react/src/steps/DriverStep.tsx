@@ -32,7 +32,7 @@ export function DriverStep({ answers, errors, set }: StepProps) {
         />
       </Field>
 
-      <Field id="postcode" label="Where is the car kept?" hint="The postcode of the address" error={errors.postcode}>
+      <Field id="postcode" label="Postcode where the car is kept" hint="The postcode of the address" error={errors.postcode}>
         <input
           id="postcode"
           className="short postcode"

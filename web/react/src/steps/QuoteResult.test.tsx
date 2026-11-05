@@ -61,4 +61,11 @@ describe('the worked example, rendered from the golden file', () => {
       screen.getByText(/You pay the first £500\.00 of any claim: a compulsory £250\.00 and the voluntary £250\.00 you chose/),
     ).toBeInTheDocument();
   });
+
+  it('says there is no voluntary excess when none was chosen, not “the voluntary £0.00 you chose”', () => {
+    render(<QuoteResult quote={{ ...quote, voluntaryExcess: 0 }} coverFor="Comprehensive cover" onChange={() => {}} onRestart={() => {}} />);
+
+    expect(screen.getByText('You pay the first £250.00 of any claim: a compulsory £250.00 and no voluntary excess.')).toBeInTheDocument();
+    expect(screen.queryByText(/£0\.00/)).not.toBeInTheDocument();
+  });
 });

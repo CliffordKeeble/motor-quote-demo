@@ -10,7 +10,7 @@ public class WorkedExampleTests
         ("Driving experience", 0.00m, 400.00m),
         ("Your car", 16.00m, 416.00m),
         ("Car value", 0.00m, 416.00m),
-        ("Where you live", -62.40m, 353.60m),
+        ("Postcode where the car is kept", -62.40m, 353.60m),
         ("Where it is kept overnight", 0.00m, 353.60m),
         ("Annual mileage", 0.00m, 353.60m),
         ("What the car is used for", 0.00m, 353.60m),
@@ -67,11 +67,11 @@ public class WorkedExampleTests
         Assert.Equal("20 years with a full licence", quote.Line("Driving experience").Detail);
         Assert.Equal("Insurance group 17", quote.Line("Your car").Detail);
         Assert.Equal("£14,500", quote.Line("Car value").Detail);
-        Assert.Equal("PE postcode area, band A", quote.Line("Where you live").Detail);
+        Assert.Equal("PE postcode area, band A", quote.Line("Postcode where the car is kept").Detail);
         Assert.Equal("Driveway", quote.Line("Where it is kept overnight").Detail);
         Assert.Equal("5,000 to 10,000 miles", quote.Line("Annual mileage").Detail);
         Assert.Equal("Social and commuting", quote.Line("What the car is used for").Detail);
-        Assert.Equal("0", quote.Line("Claims in the last 5 years").Detail);
+        Assert.Equal("None", quote.Line("Claims in the last 5 years").Detail);
         Assert.Equal("6 years, 52% off", quote.Line("No-claims bonus").Detail);
         Assert.Equal("£250", quote.Line("Voluntary excess").Detail);
         Assert.Equal("12% on everything above", quote.Line("Insurance Premium Tax").Detail);

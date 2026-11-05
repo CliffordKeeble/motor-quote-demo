@@ -19,7 +19,8 @@ Playwright suite runs the same journey through both.
 Each page links to the other ("Switch to Angular", "Switch to React") at any step, and the answers
 go with it. They travel after the `#` in the address, which a browser never sends to a server, and
 the page that opens takes them out of the address bar as it reads them (`web/shared/switch.ts`,
-which also holds the two live addresses).
+which also holds the two live addresses). Whether the browser's own history list still holds the
+address as it was first opened has not been checked.
 
 ## The stack, as built
 
@@ -127,6 +128,13 @@ It proves three things. The C# engine produces every line's amount and running t
 apart from the engine. The API's response body for it is byte for byte
 `contracts/examples/quote-worked-example.json`. And both pages render that same file line for
 line.
+
+## What the quote checks, and what it takes as given
+
+- **Age.** Cover can start on the 17th birthday at the earliest. Someone who turns 17 within the next 30 days can get a quote for a start date on or after that birthday, and the price uses their age on the start date.
+- **Postcode.** The area at the start of the postcode must be one of the UK's 121 postcode areas; Guernsey, Jersey and the Isle of Man are not covered. The demo checks the area, not the address: there is no lookup service, so it stores nothing and costs nothing.
+- **Claims and the no-claims bonus** are separate factors, as in real rating. Many years of no-claims bonus with two or more recent claims is possible (a protected bonus, or claims that were not the driver's fault), so the pair is priced as given.
+- **Car value** is taken as stated, between £500 and £250,000, whatever the car, as many real quote journeys take it.
 
 ## Deploying
 

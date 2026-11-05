@@ -17,8 +17,15 @@ function longDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
 
+// What a claim costs the person first. With no voluntary excess chosen it says so, rather than
+// "the voluntary £0.00 you chose".
+function ifYouClaim(quote: Quote) {
+  const voluntary = quote.voluntaryExcess > 0 ? `the voluntary ${money(quote.voluntaryExcess)} you chose` : 'no voluntary excess';
+  return `You pay the first ${money(quote.compulsoryExcess + quote.voluntaryExcess)} of any claim: a compulsory ${money(quote.compulsoryExcess)} and ${voluntary}.`;
+}
+
 // The price, and every step of how it was worked out. The same page as the React app's
-// steps/QuoteResult.tsx, with the same three formatting rules above.
+// steps/QuoteResult.tsx, with the same formatting rules above.
 @Component({
   selector: 'app-quote-result',
   templateUrl: './quote-result.html',
@@ -33,6 +40,7 @@ export class QuoteResult {
   protected readonly money = money;
   protected readonly change = change;
   protected readonly longDate = longDate;
+  protected readonly ifYouClaim = computed(() => ifYouClaim(this.quote()));
 
   protected effectClass(line: QuoteLine) {
     return `num effect ${line.amount < 0 ? 'down' : line.amount > 0 ? 'up' : ''}`;

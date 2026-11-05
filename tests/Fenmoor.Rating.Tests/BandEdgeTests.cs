@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Fenmoor.Rating.Tests;
 
 public class BandEdgeTests
@@ -119,6 +121,34 @@ public class BandEdgeTests
         var request = Answers.WorkedExample with { ClaimsLast5Years = claims };
 
         Assert.Equal((decimal)factor, Multiplier(request, "Claims in the last 5 years"));
+    }
+
+    [Theory]
+    [InlineData(0, "None")]
+    [InlineData(1, "One")]
+    [InlineData(2, "Two or more")]
+    public void The_claims_line_says_the_answers_words(int claims, string detail)
+    {
+        var request = Answers.WorkedExample with { ClaimsLast5Years = claims };
+
+        Assert.Equal(detail, RatingEngine.Rate(request).Line("Claims in the last 5 years").Detail);
+    }
+
+    [Theory]
+    [InlineData("2012-10-26", "2029-10-26")]
+    [InlineData("2012-02-29", "2029-03-01")]
+    [InlineData("2012-03-01", "2029-03-01")]
+    [InlineData("2011-02-28", "2028-02-28")]
+    [InlineData("2008-02-29", "2025-03-01")]
+    public void The_first_day_aged_17_is_the_first_day_AgeOn_says_17(string born, string expected)
+    {
+        var dateOfBirth = DateOnly.Parse(born, CultureInfo.InvariantCulture);
+
+        var day = RatingEngine.FirstDayAged(dateOfBirth, 17);
+
+        Assert.Equal(DateOnly.Parse(expected, CultureInfo.InvariantCulture), day);
+        Assert.Equal(17, RatingEngine.AgeOn(dateOfBirth, day));
+        Assert.Equal(16, RatingEngine.AgeOn(dateOfBirth, day.AddDays(-1)));
     }
 
     [Fact]
