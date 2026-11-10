@@ -7,7 +7,7 @@ import { emptyAnswers, exampleAnswers } from '@shared/validation';
 
 // web/shared/switch.ts is used by both front ends; its own tests run here, as validation.ts's do.
 
-// The live addresses are written in five files, and docs/DEPLOY.md (step 5) names them. These
+// The live addresses are written in six files, and docs/DEPLOY.md (step 5) names them. These
 // tests read the repository, so a changed address left behind in one of them goes red.
 const repo = join(import.meta.dirname, '../../..');
 const hostnames = Object.values(liveSites).map((site) => new URL(site).hostname);
@@ -31,7 +31,7 @@ describe('the live addresses', () => {
     expect(pipeline.match(/^\s*angularSiteUrl:\s*(\S+)\s*$/m)?.[1]).toBe(liveSites.angular);
   });
 
-  it('are written in the five files DEPLOY.md names, and only ever as the two in liveSites', () => {
+  it('are written in the six files DEPLOY.md names, and only ever as the two in liveSites', () => {
     const found = new Map<string, string[]>();
     for (const file of filesUnder(repo)) {
       const text = readFileSync(file, 'utf8');
@@ -40,7 +40,7 @@ describe('the live addresses', () => {
     }
 
     expect([...found.keys()].sort()).toEqual(
-      ['README.md', 'azure-pipelines.yml', 'docs/DEPLOY.md', 'tools/smoke_live.py', 'web/shared/switch.ts'],
+      ['README.md', 'azure-pipelines.yml', 'docs/DEPLOY.md', 'tools/smoke_live.py', 'web/react/index.html', 'web/shared/switch.ts'],
     );
     for (const [file, names] of found) {
       for (const name of names) expect(hostnames, `${name} in ${file}`).toContain(name);

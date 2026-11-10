@@ -84,15 +84,16 @@ It is `ashy-dune-08048570f.1.azurestaticapps.net` (read 29 October 2026), and it
 `azure-pipelines.yml` as `angularSiteUrl`, with `https://` in front, so the check after the
 Angular deploy knows where to look. If that line is ever emptied, the check fails and says so.
 
-If either address ever changes, change it in every place it is written. There are five files:
+If either address ever changes, change it in every place it is written. There are six files:
 
 - `azure-pipelines.yml`: `siteUrl` and `angularSiteUrl`, for the check after each deploy;
 - `web/shared/switch.ts`: `liveSites`, where each page's "Switch to" link finds the other;
 - `README.md`: the **Live:** line;
 - this file: the commands under step 6;
-- `tools/smoke_live.py`: the example in its opening comment.
+- `tools/smoke_live.py`: the example in its opening comment;
+- `web/react/index.html`: the `og:image` link-preview tag, which must be a full address.
 
-A test reads all five (`web/react/src/switch.test.ts`) and fails if any address in them is not
+A test reads all six (`web/react/src/switch.test.ts`) and fails if any address in them is not
 one of `liveSites`, or if the pipeline's two differ from it.
 
 Never paste a token into a file or a chat. If one is ever pasted somewhere, rotate it:
